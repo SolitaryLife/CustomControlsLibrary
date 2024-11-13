@@ -19,7 +19,12 @@ namespace CustomControlsLibrary
         private string _textValue = "";
         private bool _isPlaceholder = false;
         private bool _isPasswordChar = false;
+
+        private PictureBox pictureBox;
+        private ContentAlignment _iconAlign = ContentAlignment.MiddleLeft;
         private HorizontalAlignment _textAlign = HorizontalAlignment.Left;
+        private bool _showIcon = false;
+        private int _iconPadding = 5;
 
         // Constructor
         public CustomTextBox()
@@ -29,40 +34,88 @@ namespace CustomControlsLibrary
 
         private void InitializeComponent()
         {
-            this.textBox = new System.Windows.Forms.TextBox();
-            this.SuspendLayout();
+            textBox = new TextBox();
+            pictureBox = new PictureBox();
+            SuspendLayout();
             // 
             // textBox
             // 
-            this.textBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBox.Location = new System.Drawing.Point(7, 7);
-            this.textBox.Name = "textBox";
-            this.textBox.Size = new System.Drawing.Size(186, 15);
-            this.textBox.ScrollBars = ScrollBars.None;
-            this.textBox.TabIndex = 0;
-            this.textBox.Enter += new System.EventHandler(this.textBox_Enter);
-            this.textBox.Leave += new System.EventHandler(this.textBox_Leave);
+            textBox.BorderStyle = BorderStyle.None;
+            textBox.Location = new Point(7, 7);
+            textBox.Name = "textBox";
+            textBox.Size = new Size(186, 15);
+            textBox.ScrollBars = ScrollBars.None;
+            textBox.TabIndex = 0;
+            textBox.Enter += new EventHandler(this.textBox_Enter);
+            textBox.Leave += new EventHandler(this.textBox_Leave);
+            //
+            // pictureBox
+            //
+            pictureBox.Size = new Size(16, 16);
+            pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Bottom;
+            pictureBox.Visible = _showIcon;
+            pictureBox.Name = "pictureBox";
             // 
             // CustomTextBox
             // 
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            this.BackColor = System.Drawing.SystemColors.Window;
-            this.Controls.Add(this.textBox);
-            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.5F);
-            this.ForeColor = System.Drawing.Color.DimGray;
-            this.Margin = new System.Windows.Forms.Padding(4);
-            this.Name = "CustomTextBox";
-            this.Padding = new System.Windows.Forms.Padding(7);
-            this.Size = new System.Drawing.Size(200, 30);
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleMode = AutoScaleMode.None;
+            BackColor = SystemColors.Window;
+            Controls.Add(this.textBox);
+            Controls.Add(pictureBox);
+            Font = new Font("Microsoft Sans Serif", 9.5F);
+            ForeColor = Color.DimGray;
+            Margin = new Padding(4);
+            Name = "CustomTextBox";
+            Padding = new Padding(7);
+            Size = new Size(200, 30);
+            ResumeLayout(false);
+            PerformLayout();
         }
-
 
         #region Properties
         // Properties
+        //[Category("Custom TextBox")]
+        //public Size pictureBoxSize
+        //{
+        //    get => pictureBox.Size;
+        //    set
+        //    {
+
+        //        int W = value.Width;
+        //        int H = Math.Max(Size.Height - 14, value.Height);
+
+        //        pictureBox.Size = new Size(W, H);
+        //    }
+        //}
+
+        [Category("Custom TextBox")]
+        [Description("Gets or sets the padding between icon and text.")]
+        public int IconPadding
+        {
+            get => _iconPadding;
+            set
+            {
+                if (value >= 0)
+                {
+                    _iconPadding = value;
+                    UpdateIconPosition();
+                }
+            }
+        }
+
+        [Category("Custom TextBox")]
+        [Description("Gets or sets the alignment of the icon.")]
+        public ContentAlignment IconAlign
+        {
+            get => _iconAlign;
+            set
+            {
+                _iconAlign = value;
+                UpdateIconPosition();
+            }
+        }
+
         [Category("Custom TextBox")]
         [Description("Gets or sets the alignment of the text.")]
         public HorizontalAlignment TextAlign
@@ -84,6 +137,37 @@ namespace CustomControlsLibrary
             {
                 _borderColor = value;
                 this.Invalidate();
+            }
+        }
+
+        [Category("Custom TextBox")]
+        [Description("Gets or sets whether the icon should be displayed.")]
+        public bool ShowIcon
+        {
+            get => _showIcon;
+            set
+            {
+                _showIcon = value;
+                if (Multiline && _showIcon)
+                {
+                    Multiline = false;
+                }
+                pictureBox.Visible = _showIcon;
+                pictureBox.BringToFront();
+                textBox.Dock = _showIcon ? DockStyle.None : DockStyle.Fill;
+                UpdateIconPosition();
+            }
+        }
+
+        [Category("Custom TextBox")]
+        [Description("Gets or sets the icon to be displayed.")]
+        public Image Icon
+        {
+            get => pictureBox.Image;
+            set
+            {
+                pictureBox.Image = value;
+                UpdateIconPosition();
             }
         }
 
@@ -143,9 +227,15 @@ namespace CustomControlsLibrary
             get { return textBox.Multiline; }
             set
             {
-                textBox.Multiline = value;
+                if (ShowIcon && value)
+                {
+                    ShowIcon = false;
+                }
 
+                textBox.Multiline = value;
                 textBox.ScrollBars = value ? ScrollBars.Both : ScrollBars.None;
+                textBox.Dock = value ? DockStyle.Fill : DockStyle.None;
+                UpdateControlHeight();
             }
         }
 
@@ -262,6 +352,7 @@ namespace CustomControlsLibrary
             base.OnResize(e);
             if (this.DesignMode)
                 UpdateControlHeight();
+            UpdateIconPosition();
         }
 
         protected override void OnLoad(EventArgs e)
@@ -285,6 +376,70 @@ namespace CustomControlsLibrary
             }
         }
 
+        private void UpdateIconPosition()
+        {
+            if (_showIcon && pictureBox.Image != null)
+            {
+                int textBoxNewWidth;
+                int iconSpace = pictureBox.Width + _iconPadding;
+
+                switch (_iconAlign)
+                {
+                    case ContentAlignment.MiddleLeft:
+                        pictureBox.Location = new Point(this.Padding.Left, (this.Height - pictureBox.Height) / 2);
+                        textBox.Location = new Point(this.Padding.Left + iconSpace, textBox.Top);
+                        textBoxNewWidth = this.Width - this.Padding.Left - iconSpace - this.Padding.Right;
+                        textBox.Width = Math.Max(0, textBoxNewWidth);
+                        break;
+
+                    case ContentAlignment.MiddleRight:
+                        pictureBox.Location = new Point(this.Width - pictureBox.Width - this.Padding.Right, (this.Height - pictureBox.Height) / 2);
+                        textBoxNewWidth = this.Width - this.Padding.Left - this.Padding.Right - iconSpace;
+                        textBox.Width = Math.Max(0, textBoxNewWidth);
+                        textBox.Location = new Point(this.Padding.Left, textBox.Top);
+                        break;
+
+                    case ContentAlignment.TopLeft:
+                        pictureBox.Location = new Point(this.Padding.Left, this.Padding.Top);
+                        textBox.Location = new Point(pictureBox.Right + this.Padding.Left, this.Padding.Top);
+                        textBoxNewWidth = this.Width - pictureBox.Right - this.Padding.Left - this.Padding.Right - iconSpace;
+                        textBox.Width = Math.Max(0, textBoxNewWidth);
+                        break;
+
+                    case ContentAlignment.TopRight:
+                        pictureBox.Location = new Point(this.Width - pictureBox.Width - this.Padding.Right, this.Padding.Top);
+                        textBoxNewWidth = pictureBox.Left - this.Padding.Left - this.Padding.Right - iconSpace;
+                        textBox.Width = Math.Max(0, textBoxNewWidth);
+                        textBox.Location = new Point(this.Padding.Left, this.Padding.Top);
+                        break;
+
+                    case ContentAlignment.BottomLeft:
+                        pictureBox.Location = new Point(this.Padding.Left, this.Height - pictureBox.Height - this.Padding.Bottom);
+                        textBox.Location = new Point(pictureBox.Right + this.Padding.Left, this.Padding.Top);
+                        textBoxNewWidth = this.Width - pictureBox.Right - this.Padding.Left - this.Padding.Right - iconSpace;
+                        textBox.Width = Math.Max(0, textBoxNewWidth);
+                        break;
+
+                    case ContentAlignment.BottomRight:
+                        pictureBox.Location = new Point(this.Width - pictureBox.Width - this.Padding.Right, this.Height - pictureBox.Height - this.Padding.Bottom);
+                        textBoxNewWidth = pictureBox.Left - this.Padding.Left - this.Padding.Right - iconSpace;
+                        textBox.Width = Math.Max(0, textBoxNewWidth);
+                        textBox.Location = new Point(this.Padding.Left, this.Padding.Top);
+                        break;
+                }
+            }
+            else
+            {
+                textBox.Location = new Point(this.Padding.Left, textBox.Top);
+                textBox.Width = this.Width - this.Padding.Left - this.Padding.Right;
+            }
+
+            int H = Size.Height - 14;
+            int W = H - 1;
+
+            pictureBox.Size = new Size(W, H);
+        }
+
         private void SetPlaceholder()
         {
             _isPlaceholder = true;
@@ -292,6 +447,7 @@ namespace CustomControlsLibrary
             textBox.ForeColor = _placeholderColor;
             if (_isPasswordChar)
                 textBox.UseSystemPasswordChar = false;
+            UpdateIconPosition();
         }
 
         private void RemovePlaceholder()
@@ -301,6 +457,7 @@ namespace CustomControlsLibrary
             textBox.ForeColor = this.ForeColor;
             if (_isPasswordChar)
                 textBox.UseSystemPasswordChar = true;
+            UpdateIconPosition();
         }
         #endregion
 
@@ -386,11 +543,10 @@ namespace CustomControlsLibrary
                     {
                         textBox.Enter -= textBox_Enter;
                         textBox.Leave -= textBox_Leave;
-                        textBox.Dispose();
+                        pictureBox?.Dispose();
+                        textBox?.Dispose();
                     }
                 }
-
-                // Release unmanaged resources (if any)
 
                 disposedValue = true;
             }
