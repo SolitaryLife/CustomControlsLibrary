@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("CustomControlsLibrary")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Free to use, not for profit.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("CustomControlsLibrary")]
-[assembly: AssemblyCopyright("Copyright ©  2024")]
+[assembly: AssemblyCompany("-")]
+[assembly: AssemblyProduct("Utility Tools")]
+[assembly: AssemblyCopyright("Copyright ©  2024 Copyright ©  2024 Tofu Survivors")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
