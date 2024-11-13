@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace CustomControlsLibrary
 {
-    public partial class CustomTextBox : UserControl, IDisposable
+    public class CustomTextBox : UserControl, IDisposable
     {
         // Fields
         private TextBox textBox;
@@ -16,8 +16,10 @@ namespace CustomControlsLibrary
         private bool _underlinedStyle = false;
         private Color _placeholderColor = Color.DarkGray;
         private string _placeholderText = "";
+        private string _textValue = "";
         private bool _isPlaceholder = false;
         private bool _isPasswordChar = false;
+        private HorizontalAlignment _textAlign = HorizontalAlignment.Left;
 
         // Constructor
         public CustomTextBox()
@@ -37,6 +39,7 @@ namespace CustomControlsLibrary
             this.textBox.Location = new System.Drawing.Point(7, 7);
             this.textBox.Name = "textBox";
             this.textBox.Size = new System.Drawing.Size(186, 15);
+            this.textBox.ScrollBars = ScrollBars.None;
             this.textBox.TabIndex = 0;
             this.textBox.Enter += new System.EventHandler(this.textBox_Enter);
             this.textBox.Leave += new System.EventHandler(this.textBox_Leave);
@@ -60,6 +63,18 @@ namespace CustomControlsLibrary
 
         #region Properties
         // Properties
+        [Category("Custom TextBox")]
+        [Description("Gets or sets the alignment of the text.")]
+        public HorizontalAlignment TextAlign
+        {
+            get => _textAlign;
+            set
+            {
+                _textAlign = value;
+                textBox.TextAlign = value;
+            }
+        }
+
         [Category("Custom TextBox")]
         [Description("Gets or sets the border color of the control.")]
         public Color BorderColor
@@ -126,7 +141,12 @@ namespace CustomControlsLibrary
         public bool Multiline
         {
             get { return textBox.Multiline; }
-            set { textBox.Multiline = value; }
+            set
+            {
+                textBox.Multiline = value;
+
+                textBox.ScrollBars = value ? ScrollBars.Both : ScrollBars.None;
+            }
         }
 
         [Category("Custom TextBox")]
@@ -173,13 +193,20 @@ namespace CustomControlsLibrary
         {
             get
             {
-                if (_isPlaceholder) return "";
-                return textBox.Text;
+                return _textValue;
             }
             set
             {
-                textBox.Text = value;
-                SetPlaceholder();
+                _textValue = value;
+
+                if (!string.IsNullOrEmpty(_textValue))
+                {
+                    RemovePlaceholder();
+                }
+                else
+                {
+                    SetPlaceholder();
+                }
             }
         }
 
@@ -191,7 +218,7 @@ namespace CustomControlsLibrary
             set
             {
                 _placeholderText = value;
-                if (string.IsNullOrEmpty(textBox.Text))
+                if (string.IsNullOrEmpty(_textValue))
                     SetPlaceholder();
             }
         }
@@ -260,26 +287,20 @@ namespace CustomControlsLibrary
 
         private void SetPlaceholder()
         {
-            if (string.IsNullOrEmpty(textBox.Text) && !string.IsNullOrEmpty(_placeholderText))
-            {
-                _isPlaceholder = true;
-                textBox.Text = _placeholderText;
-                textBox.ForeColor = _placeholderColor;
-                if (_isPasswordChar)
-                    textBox.UseSystemPasswordChar = false;
-            }
+            _isPlaceholder = true;
+            textBox.Text = _placeholderText;
+            textBox.ForeColor = _placeholderColor;
+            if (_isPasswordChar)
+                textBox.UseSystemPasswordChar = false;
         }
 
         private void RemovePlaceholder()
         {
-            if (_isPlaceholder && _placeholderText == textBox.Text)
-            {
-                _isPlaceholder = false;
-                textBox.Text = "";
-                textBox.ForeColor = this.ForeColor;
-                if (_isPasswordChar)
-                    textBox.UseSystemPasswordChar = true;
-            }
+            _isPlaceholder = false;
+            textBox.Text = _textValue;
+            textBox.ForeColor = this.ForeColor;
+            if (_isPasswordChar)
+                textBox.UseSystemPasswordChar = true;
         }
         #endregion
 
@@ -289,6 +310,7 @@ namespace CustomControlsLibrary
         {
             this.BorderColor = _borderFocusColor;
             this.Invalidate();
+
             RemovePlaceholder();
         }
 
@@ -296,7 +318,11 @@ namespace CustomControlsLibrary
         {
             this.BorderColor = _borderColor;
             this.Invalidate();
-            SetPlaceholder();
+            _textValue = textBox.Text;
+            if (string.IsNullOrEmpty(_textValue))
+            {
+                SetPlaceholder();
+            }
         }
         #endregion
 
