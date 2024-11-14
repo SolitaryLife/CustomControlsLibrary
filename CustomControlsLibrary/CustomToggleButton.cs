@@ -131,7 +131,7 @@ namespace CustomControlsLibrary
             {
                 if (value >= 0)
                 {
-                    _padding = value;
+                    _padding = Math.Min((Height / 2) - 1 , value);
                     Invalidate();
                 }
             }
@@ -189,57 +189,61 @@ namespace CustomControlsLibrary
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            var g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-
-            // Calculate dimensions
-            var toggleSize = Math.Min(Height - (2 * _padding), _toggleSize);
-            var backRectangle = new Rectangle(0, 0, Width, Height);
-
-            // Draw background
-            using (var path = GetRoundedRectangle(backRectangle, Height / 2))
+            try
             {
-                if (_solidStyle)
+                var g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+
+                // Calculate dimensions
+                var toggleSize = Math.Min(Height - (2 * _padding), _toggleSize);
+                var backRectangle = new Rectangle(0, 0, Width, Height);
+
+                // Draw background
+                using (var path = GetRoundedRectangle(backRectangle, Height / 2))
                 {
-                    g.FillPath(new SolidBrush(_checked ? _onBackColor : _offBackColor), path);
+                    if (_solidStyle)
+                    {
+                        g.FillPath(new SolidBrush(_checked ? _onBackColor : _offBackColor), path);
+                    }
+                    else
+                    {
+                        // Gradient style
+                        using (var brush = new LinearGradientBrush(
+                            backRectangle,
+                            _checked ? _onBackColor : _offBackColor,
+                            Color.FromArgb(50, _checked ? _onBackColor : _offBackColor),
+                            LinearGradientMode.Vertical))
+                        {
+                            g.FillPath(brush, path);
+                        }
+                    }
                 }
+
+                // Calculate toggle position
+                float togglePosition;
+                if (_checked)
+                    togglePosition = Width - toggleSize - _padding;
                 else
+                    togglePosition = _padding;
+
+                // Draw toggle button
+                var toggleRectangle = new Rectangle((int)togglePosition, _padding, toggleSize, toggleSize);
+
+                using (var path = GetRoundedRectangle(toggleRectangle, toggleSize / 2))
                 {
-                    // Gradient style
-                    using (var brush = new LinearGradientBrush(
-                        backRectangle,
-                        _checked ? _onBackColor : _offBackColor,
-                        Color.FromArgb(50, _checked ? _onBackColor : _offBackColor),
-                        LinearGradientMode.Vertical))
+                    // Add shadow effect
+                    if (_isHovered)
                     {
-                        g.FillPath(brush, path);
+                        using (var shadowBrush = new SolidBrush(Color.FromArgb(20, Color.Black)))
+                        {
+                            g.FillPath(shadowBrush, path);
+                        }
                     }
+
+                    g.FillPath(new SolidBrush(_checked ? _onToggleColor : _offToggleColor), path);
                 }
             }
-
-            // Calculate toggle position
-            float togglePosition;
-            if (_checked)
-                togglePosition = Width - toggleSize - _padding;
-            else
-                togglePosition = _padding;
-
-            // Draw toggle button
-            var toggleRectangle = new Rectangle((int)togglePosition, _padding, toggleSize, toggleSize);
-
-            using (var path = GetRoundedRectangle(toggleRectangle, toggleSize / 2))
-            {
-                // Add shadow effect
-                if (_isHovered)
-                {
-                    using (var shadowBrush = new SolidBrush(Color.FromArgb(20, Color.Black)))
-                    {
-                        g.FillPath(shadowBrush, path);
-                    }
-                }
-
-                g.FillPath(new SolidBrush(_checked ? _onToggleColor : _offToggleColor), path);
-            }
+            catch { }
         }
 
         private GraphicsPath GetRoundedRectangle(Rectangle bounds, int radius)
