@@ -48,6 +48,31 @@ namespace CustomControlsLibrary
 
         #region Properties
         [Category("Custom Button")]
+        [DefaultValue(SmoothingMode.Default)]
+        [Description("Specifies the smoothing mode for rendering, which affects the quality of lines and edges.")]
+        public SmoothingMode SmoothingMode { get; set; }
+
+        [Category("Custom Button")]
+        [DefaultValue(InterpolationMode.Default)]
+        [Description("Determines the interpolation mode used for scaling images, which impacts image quality.")]
+        public InterpolationMode InterpolationMode { get; set; }
+
+        [Category("Custom Button")]
+        [DefaultValue(PixelOffsetMode.Default)]
+        [Description("Sets the pixel offset mode, controlling pixel alignment for improved rendering accuracy.")]
+        public PixelOffsetMode PixelOffsetMode { get; set; }
+
+        [Category("Custom Button")]
+        [DefaultValue(true)]
+        [Description("Enables or disables double buffering to reduce flickering during rendering.")]
+
+        public bool DoubleBuffereds
+        {
+            get => DoubleBuffered;
+            set => DoubleBuffered = value;
+        }
+
+        [Category("Custom Button")]
         [Description("Enable or disable text wrapping")]
         public bool AutoEllipsis
         {
@@ -291,7 +316,10 @@ namespace CustomControlsLibrary
         private void CustomButton_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.SmoothingMode = SmoothingMode;
+            g.InterpolationMode = InterpolationMode;
+            g.PixelOffsetMode = PixelOffsetMode;
+
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
             Rectangle rectSurface = ClientRectangle;
@@ -304,6 +332,14 @@ namespace CustomControlsLibrary
             using (Pen penBorder = new Pen(_borderColor, _borderSize))
             using (SolidBrush brushText = new SolidBrush(_textColor))
             {
+                penSurface.StartCap = LineCap.Round;
+                penSurface.EndCap = LineCap.Round;
+                penSurface.LineJoin = LineJoin.Round;
+
+                penBorder.StartCap = LineCap.Round;
+                penBorder.EndCap = LineCap.Round;
+                penBorder.LineJoin = LineJoin.Round;
+
                 // Draw button surface
                 g.FillPath(new SolidBrush(_isHovering ? _buttonHoverColor : _buttonColor), pathSurface);
 
@@ -437,6 +473,10 @@ namespace CustomControlsLibrary
                 _icon?.Dispose();
             }
             base.Dispose(disposing);
+        }
+        ~CustomButton()
+        {
+            Dispose(true);
         }
         #endregion
     }

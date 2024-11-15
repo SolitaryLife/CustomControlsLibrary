@@ -51,6 +51,9 @@
     <Compile Include="CustomCircularProgressBar.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="CustomControlBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="CustomTextBox.cs">
       <SubType>UserControl</SubType>
     </Compile>

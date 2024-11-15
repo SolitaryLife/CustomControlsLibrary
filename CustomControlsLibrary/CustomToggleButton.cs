@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace CustomControlsLibrary
 {
-    public class CustomToggleButton:UserControl
+    public class CustomToggleButton : UserControl
     {
         // Fields
         private bool _checked = false;
@@ -29,6 +29,31 @@ namespace CustomControlsLibrary
 
         #region Properties
         // Properties
+        // Properties
+        [Category("Custom Toggle")]
+        [DefaultValue(SmoothingMode.Default)]
+        [Description("Specifies the smoothing mode for rendering, which affects the quality of lines and edges.")]
+        public SmoothingMode SmoothingMode { get; set; }
+
+        [Category("Custom Toggle")]
+        [DefaultValue(InterpolationMode.Default)]
+        [Description("Determines the interpolation mode used for scaling images, which impacts image quality.")]
+        public InterpolationMode InterpolationMode { get; set; }
+
+        [Category("Custom Toggle")]
+        [DefaultValue(PixelOffsetMode.Default)]
+        [Description("Sets the pixel offset mode, controlling pixel alignment for improved rendering accuracy.")]
+        public PixelOffsetMode PixelOffsetMode { get; set; }
+
+        [Category("Custom Toggle")]
+        [DefaultValue(true)]
+        [Description("Enables or disables double buffering to reduce flickering during rendering.")]
+        public bool DoubleBuffereds
+        {
+            get => DoubleBuffered;
+            set => DoubleBuffered = value;
+        }
+
         [Category("Custom Toggle")]
         [Description("Gets or sets whether the toggle is checked")]
         public bool Checked
@@ -167,6 +192,8 @@ namespace CustomControlsLibrary
         // Constructor
         public CustomToggleButton()
         {
+            DoubleBuffered = true;
+
             SetStyle(ControlStyles.UserPaint | ControlStyles.ResizeRedraw |
                     ControlStyles.SupportsTransparentBackColor | ControlStyles.AllPaintingInWmPaint |
                     ControlStyles.OptimizedDoubleBuffer, true);
@@ -189,10 +216,14 @@ namespace CustomControlsLibrary
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            if (Width <= 0 || Height <= 0) return;
+
             try
             {
-                var g = e.Graphics;
-                g.SmoothingMode = SmoothingMode.AntiAlias;
+                Graphics g = e.Graphics;
+                g.SmoothingMode = SmoothingMode;
+                g.InterpolationMode = InterpolationMode;
+                g.PixelOffsetMode = PixelOffsetMode;
 
                 // Calculate dimensions
                 var toggleSize = Math.Min(Height - (2 * _padding), _toggleSize);
@@ -243,7 +274,10 @@ namespace CustomControlsLibrary
                     g.FillPath(new SolidBrush(_checked ? _onToggleColor : _offToggleColor), path);
                 }
             }
-            catch { }
+            catch(Exception ex) 
+            {
+                throw new ArgumentException(ex.Message);
+            }
         }
 
         private GraphicsPath GetRoundedRectangle(Rectangle bounds, int radius)
@@ -284,9 +318,14 @@ namespace CustomControlsLibrary
         {
             if (disposing && animationTimer != null)
             {
-                animationTimer.Dispose();
+                animationTimer?.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        ~CustomToggleButton()
+        {
+            Dispose(true);
         }
         #endregion
     }

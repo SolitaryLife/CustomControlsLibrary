@@ -34,8 +34,11 @@ namespace CustomControlsLibrary
 
         private void InitializeComponent()
         {
+            DoubleBuffered = true;
+
             textBox = new TextBox();
             pictureBox = new PictureBox();
+
             SuspendLayout();
             // 
             // textBox
@@ -88,6 +91,31 @@ namespace CustomControlsLibrary
         //        pictureBox.Size = new Size(W, H);
         //    }
         //}
+
+        [Category("Custom TextBox")]
+        [DefaultValue(SmoothingMode.Default)]
+        [Description("Specifies the smoothing mode for rendering, which affects the quality of lines and edges.")]
+        public SmoothingMode SmoothingMode { get; set; }
+
+        [Category("Custom TextBox")]
+        [DefaultValue(InterpolationMode.Default)]
+        [Description("Determines the interpolation mode used for scaling images, which impacts image quality.")]
+        public InterpolationMode InterpolationMode { get; set; }
+
+        [Category("Custom TextBox")]
+        [DefaultValue(PixelOffsetMode.Default)]
+        [Description("Sets the pixel offset mode, controlling pixel alignment for improved rendering accuracy.")]
+        public PixelOffsetMode PixelOffsetMode { get; set; }
+
+
+        [Category("Custom TextBox")]
+        [DefaultValue(true)]
+        [Description("Enables or disables double buffering to reduce flickering during rendering.")]
+        public bool DoubleBuffereds
+        {
+            get => DoubleBuffered;
+            set => DoubleBuffered = value;
+        }
 
         [Category("Custom TextBox")]
         [Description("Gets or sets the padding between icon and text.")]
@@ -331,19 +359,34 @@ namespace CustomControlsLibrary
         // Override Methods
         protected override void OnPaint(PaintEventArgs e)
         {
-            base.OnPaint(e);
-            Graphics g = e.Graphics;
-
-            using (Pen penBorder = new Pen(_borderColor, _borderSize))
+            if (Width <= 0 || Height <= 0) return;
+            try
             {
-                if (_underlinedStyle) // Line Style
+                base.OnPaint(e);
+                Graphics g = e.Graphics;
+                g.SmoothingMode = SmoothingMode;
+                g.InterpolationMode = InterpolationMode;
+                g.PixelOffsetMode = PixelOffsetMode;
+
+                using (Pen penBorder = new Pen(_borderColor, _borderSize))
                 {
-                    g.DrawLine(penBorder, 0, this.Height - 1, this.Width, this.Height - 1);
+                    penBorder.StartCap = LineCap.Round;
+                    penBorder.EndCap = LineCap.Round;
+                    penBorder.LineJoin = LineJoin.Round;
+
+                    if (_underlinedStyle) // Line Style
+                    {
+                        g.DrawLine(penBorder, 0, this.Height - 1, this.Width, this.Height - 1);
+                    }
+                    else // Normal Rectangle Style
+                    {
+                        g.DrawRectangle(penBorder, 0, 0, this.Width - 0.5F, this.Height - 0.5F);
+                    }
                 }
-                else // Normal Rectangle Style
-                {
-                    g.DrawRectangle(penBorder, 0, 0, this.Width - 0.5F, this.Height - 0.5F);
-                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
             }
         }
 
@@ -559,6 +602,7 @@ namespace CustomControlsLibrary
         public new void Dispose()
         {
             Dispose(disposing: true);
+            GC.Collect();
             GC.SuppressFinalize(this);
         }
         #endregion

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Text;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace CustomControlsLibrary
 {
-    public class CustomCircularProgressBar:UserControl
+    public class CustomCircularProgressBar : UserControl
     {
         private Timer _timer;
         private int _angle;
@@ -34,7 +35,32 @@ namespace CustomControlsLibrary
             _timer.Tick += Timer_Tick;
             _timer.Start();
 
-            SizeChanged += CustomCircularProgressBar2_SizeChanged;
+            SizeChanged += CustomCircularProgressBar_SizeChanged;
+        }
+
+        #region Properties
+        [Category("Custom ProgressBar")]
+        [DefaultValue(SmoothingMode.Default)]
+        [Description("Specifies the smoothing mode for rendering, which affects the quality of lines and edges.")]
+        public SmoothingMode SmoothingMode { get; set; }
+
+        [Category("Custom ProgressBar")]
+        [DefaultValue(InterpolationMode.Default)]
+        [Description("Determines the interpolation mode used for scaling images, which impacts image quality.")]
+        public InterpolationMode InterpolationMode { get; set; }
+
+        [Category("Custom ProgressBar")]
+        [DefaultValue(PixelOffsetMode.Default)]
+        [Description("Sets the pixel offset mode, controlling pixel alignment for improved rendering accuracy.")]
+        public PixelOffsetMode PixelOffsetMode { get; set; }
+
+        [Category("Custom ProgressBar")]
+        [DefaultValue(true)]
+        [Description("Enables or disables double buffering to reduce flickering during rendering.")]
+        public bool DoubleBuffereds
+        {
+            get => DoubleBuffered;
+            set => DoubleBuffered = value;
         }
 
         [Category("Custom ProgressBar")]
@@ -181,7 +207,9 @@ namespace CustomControlsLibrary
                 base.Font = value;
             }
         }
+        #endregion
 
+        #region Method
         private void Timer_Tick(object sender, EventArgs e)
         {
             _angle += 5; // Adjust rotation speed here
@@ -189,7 +217,7 @@ namespace CustomControlsLibrary
             Invalidate();
         }
 
-        private void CustomCircularProgressBar2_SizeChanged(object sender, EventArgs e)
+        private void CustomCircularProgressBar_SizeChanged(object sender, EventArgs e)
         {
             float newFontSize = (float)Math.Max(10, Width / 8);
             base.Font = new Font(base.Font.FontFamily, newFontSize, base.Font.Style);
@@ -198,10 +226,16 @@ namespace CustomControlsLibrary
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            if (Width <= 0 || Height <= 0) return;
+
             try
             {
                 base.OnPaint(e);
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                e.Graphics.SmoothingMode = SmoothingMode;
+                e.Graphics.InterpolationMode = InterpolationMode;
+                e.Graphics.PixelOffsetMode = PixelOffsetMode;
+
+                e.Graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 
                 // Background circle
                 using (Pen bgPen = new Pen(Color.FromArgb(240, 240, 240), _lineWidth + 2))
@@ -238,7 +272,10 @@ namespace CustomControlsLibrary
                     }
                 }
             }
-            catch { }
+            catch(Exception ex) 
+            { 
+                throw new ArgumentException(ex.Message);
+            }
         }
 
         protected override void OnSizeChanged(EventArgs e)
@@ -248,7 +285,9 @@ namespace CustomControlsLibrary
             int min = Math.Min(Width, Height);
             Size = new Size(min, min);
         }
+        #endregion
 
+        #region Dispose
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -262,13 +301,14 @@ namespace CustomControlsLibrary
                 }
             }
 
-            SizeChanged -= CustomCircularProgressBar2_SizeChanged;
+            SizeChanged -= CustomCircularProgressBar_SizeChanged;
             base.Dispose(disposing);
         }
 
         ~CustomCircularProgressBar()
         {
-            Dispose(false);
+            Dispose(true);
         }
+        #endregion
     }
 }
