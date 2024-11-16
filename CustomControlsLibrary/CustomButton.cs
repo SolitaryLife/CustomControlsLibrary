@@ -231,9 +231,8 @@ namespace CustomControlsLibrary
         }
 
         [Category("Custom Button")]
-        [Browsable(true)]
         [Description("Sets the text displayed on the button")]
-        public override string Text
+        public  string Texts
         {
             get => _buttonText;
             set
