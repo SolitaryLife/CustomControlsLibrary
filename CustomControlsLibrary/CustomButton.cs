@@ -1,18 +1,18 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Drawing.Drawing2D;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace CustomControlsLibrary
 {
     [ToolboxItem(true)]
-    public class CustomButton : UserControl
+    public partial class CustomButton : UserControl
     {
         #region Fields
         private Color _borderColor = Color.MediumSlateBlue;
         private int _borderSize = 2;
-        private int _borderRadius = 20;
+        private BorderRadius _borderRadius;
         private Color _buttonColor = Color.MediumSlateBlue;
         private Color _buttonHoverColor = Color.LightSkyBlue;
         private Color _textColor = Color.White;
@@ -30,6 +30,8 @@ namespace CustomControlsLibrary
         private ContentAlignment _textAlign = ContentAlignment.MiddleCenter;
         private Font _buttonFont = new Font("Segoe UI", 12F);
         private int _textPadding = 5;
+        private EventHandler internalHandlerMouseEnter;
+        private EventHandler internalHandlerMouseLeave;
 
         #region Enums
         public enum IconTextAlignment
@@ -66,7 +68,6 @@ namespace CustomControlsLibrary
         [Category("Custom Button")]
         [DefaultValue(true)]
         [Description("Enables or disables double buffering to reduce flickering during rendering.")]
-
         public bool DoubleBuffereds
         {
             get => DoubleBuffered;
@@ -183,7 +184,7 @@ namespace CustomControlsLibrary
 
         [Category("Custom Button")]
         [Description("Sets the corner radius of the button")]
-        public int BorderRadius
+        public BorderRadius Borderradius
         {
             get => _borderRadius;
             set
@@ -295,10 +296,14 @@ namespace CustomControlsLibrary
             _iconTextAlignment = IconTextAlignment.TextBeforeIcon;
             _iconTextLayout = IconTextLayout.Horizontal;
 
-            MouseEnter += CustomButton_MouseEnter;
-            MouseLeave += CustomButton_MouseLeave;
-            Paint += CustomButton_Paint;
+            internalHandlerMouseEnter = CustomButton_MouseEnter;
+            internalHandlerMouseLeave = CustomButton_MouseLeave;
+
+            MouseEnter += internalHandlerMouseEnter;
+            MouseLeave += internalHandlerMouseLeave;
         }
+
+
         #endregion
 
         #region Event Handlers
@@ -314,7 +319,7 @@ namespace CustomControlsLibrary
             Invalidate();
         }
 
-        private void CustomButton_Paint(object sender, PaintEventArgs e)
+        protected override void OnPaint(PaintEventArgs e)
         {
             if (Width <= 0 || Height <= 0) return;
 
@@ -331,8 +336,16 @@ namespace CustomControlsLibrary
                 Rectangle rectBorder = Rectangle.Inflate(rectSurface, -_borderSize, -_borderSize);
                 int smoothSize = _borderSize > 0 ? _borderSize : 1;
 
-                using (GraphicsPath pathSurface = GetFigurePath(rectSurface, _borderRadius))
-                using (GraphicsPath pathBorder = GetFigurePath(rectBorder, _borderRadius - _borderSize))
+                using (GraphicsPath pathSurface = GetFigurePath(rectSurface,
+                        _borderRadius.TopLeft,
+                        _borderRadius.TopRight,
+                        _borderRadius.BottomLeft,
+                        _borderRadius.BottomRight))
+                using (GraphicsPath pathBorder = GetFigurePath(rectBorder,
+                        _borderRadius.TopLeft - _borderSize,
+                        _borderRadius.TopRight - _borderSize,
+                        _borderRadius.BottomLeft - _borderSize,
+                        _borderRadius.BottomRight - _borderSize))
                 using (Pen penSurface = new Pen(Parent.BackColor, smoothSize))
                 using (Pen penBorder = new Pen(_borderColor, _borderSize))
                 using (SolidBrush brushText = new SolidBrush(_textColor))
@@ -359,7 +372,6 @@ namespace CustomControlsLibrary
                         Width - (_textPadding * 2),
                         Height - (_textPadding * 2)
                     );
-
 
                     // Draw content (text and icon)
                     DrawTextAndIcon(g, contentRect, brushText);
@@ -447,18 +459,40 @@ namespace CustomControlsLibrary
         #endregion
 
         #region Helper Methods
-        private GraphicsPath GetFigurePath(Rectangle rect, int radius)
+        private GraphicsPath GetFigurePath(Rectangle rect, int radiusTopLeft = 0, int radiusTopRight = 0, int radiusBottomLeft = 0, int radiusBottomRight = 0)
         {
             GraphicsPath path = new GraphicsPath();
-            float curveSize = radius * 2F;
 
+            float curveSize = radiusTopLeft;
             path.StartFigure();
-            path.AddArc(rect.X, rect.Y, curveSize, curveSize, 180, 90);
-            path.AddArc(rect.Right - curveSize, rect.Y, curveSize, curveSize, 270, 90);
-            path.AddArc(rect.Right - curveSize, rect.Bottom - curveSize, curveSize, curveSize, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - curveSize, curveSize, curveSize, 90, 90);
-            path.CloseFigure();
 
+            // Top Left
+            if (radiusTopLeft > 0)
+                path.AddArc(rect.X, rect.Y, radiusTopLeft * 2, radiusTopLeft * 2, 180, 90);
+            else
+                path.AddLine(rect.X, rect.Y, rect.X, rect.Y);
+
+            // Top Right
+            if (radiusTopRight > 0)
+                path.AddArc(rect.Right - (radiusTopRight * 2), rect.Y, radiusTopRight * 2, radiusTopRight * 2, 270, 90);
+            else
+                path.AddLine(rect.Right, rect.Y, rect.Right, rect.Y);
+
+            // Bottom Right
+            if (radiusBottomRight > 0)
+                path.AddArc(rect.Right - (radiusBottomRight * 2), rect.Bottom - (radiusBottomRight * 2),
+                    radiusBottomRight * 2, radiusBottomRight * 2, 0, 90);
+            else
+                path.AddLine(rect.Right, rect.Bottom, rect.Right, rect.Bottom);
+
+            // Bottom Left
+            if (radiusBottomLeft > 0)
+                path.AddArc(rect.X, rect.Bottom - (radiusBottomLeft * 2),
+                    radiusBottomLeft * 2, radiusBottomLeft * 2, 90, 90);
+            else
+                path.AddLine(rect.X, rect.Bottom, rect.X, rect.Bottom);
+
+            path.CloseFigure();
             return path;
         }
         #endregion
@@ -476,6 +510,8 @@ namespace CustomControlsLibrary
         {
             if (disposing)
             {
+                MouseEnter -= internalHandlerMouseEnter;
+                MouseLeave -= internalHandlerMouseLeave;
                 _buttonFont?.Dispose();
                 _icon?.Dispose();
             }

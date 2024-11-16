@@ -45,6 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClassStructCustomButton.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="CustomButton.cs">
       <SubType>UserControl</SubType>
     </Compile>
