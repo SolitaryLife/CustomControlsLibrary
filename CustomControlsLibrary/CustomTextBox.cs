@@ -13,7 +13,7 @@ namespace CustomControlsLibrary
         private TextBox textBox;
         private Color _borderColor = Color.MediumSlateBlue;
         private Color _borderFocusColor = Color.HotPink;
-        private int _borderSize = 2;
+        private int _borderSize = 2;T
         private bool _underlinedStyle = false;
         private Color _placeholderColor = Color.DarkGray;
         private string _placeholderText = "";
@@ -319,6 +319,8 @@ namespace CustomControlsLibrary
             }
             set
             {
+
+                _textValue = value;
                 if (!string.IsNullOrEmpty(_textValue))
                 {
                     RemovePlaceholder();
