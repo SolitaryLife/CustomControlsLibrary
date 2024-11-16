@@ -6,6 +6,7 @@ using System.Windows.Forms;
 
 namespace CustomControlsLibrary
 {
+    [ToolboxItem(true)]
     public class CustomToggleButton : UserControl
     {
         // Fields
@@ -156,7 +157,7 @@ namespace CustomControlsLibrary
             {
                 if (value >= 0)
                 {
-                    _padding = Math.Min((Height / 2) - 1 , value);
+                    _padding = Math.Min((Height / 2) - 1, value);
                     Invalidate();
                 }
             }
@@ -274,10 +275,7 @@ namespace CustomControlsLibrary
                     g.FillPath(new SolidBrush(_checked ? _onToggleColor : _offToggleColor), path);
                 }
             }
-            catch(Exception ex) 
-            {
-                throw new ArgumentException(ex.Message);
-            }
+            catch { }
         }
 
         private GraphicsPath GetRoundedRectangle(Rectangle bounds, int radius)

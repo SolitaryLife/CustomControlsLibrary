@@ -6,6 +6,7 @@ using System.Windows.Forms;
 
 namespace CustomControlsLibrary
 {
+    [ToolboxItem(true)]
     public class CustomButton : UserControl
     {
         #region Fields
@@ -315,50 +316,56 @@ namespace CustomControlsLibrary
 
         private void CustomButton_Paint(object sender, PaintEventArgs e)
         {
-            Graphics g = e.Graphics;
-            g.SmoothingMode = SmoothingMode;
-            g.InterpolationMode = InterpolationMode;
-            g.PixelOffsetMode = PixelOffsetMode;
+            if (Width <= 0 || Height <= 0) return;
 
-            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-
-            Rectangle rectSurface = ClientRectangle;
-            Rectangle rectBorder = Rectangle.Inflate(rectSurface, -_borderSize, -_borderSize);
-            int smoothSize = _borderSize > 0 ? _borderSize : 1;
-
-            using (GraphicsPath pathSurface = GetFigurePath(rectSurface, _borderRadius))
-            using (GraphicsPath pathBorder = GetFigurePath(rectBorder, _borderRadius - _borderSize))
-            using (Pen penSurface = new Pen(Parent.BackColor, smoothSize))
-            using (Pen penBorder = new Pen(_borderColor, _borderSize))
-            using (SolidBrush brushText = new SolidBrush(_textColor))
+            try
             {
-                penSurface.StartCap = LineCap.Round;
-                penSurface.EndCap = LineCap.Round;
-                penSurface.LineJoin = LineJoin.Round;
+                Graphics g = e.Graphics;
+                g.SmoothingMode = SmoothingMode;
+                g.InterpolationMode = InterpolationMode;
+                g.PixelOffsetMode = PixelOffsetMode;
 
-                penBorder.StartCap = LineCap.Round;
-                penBorder.EndCap = LineCap.Round;
-                penBorder.LineJoin = LineJoin.Round;
+                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-                // Draw button surface
-                g.FillPath(new SolidBrush(_isHovering ? _buttonHoverColor : _buttonColor), pathSurface);
+                Rectangle rectSurface = ClientRectangle;
+                Rectangle rectBorder = Rectangle.Inflate(rectSurface, -_borderSize, -_borderSize);
+                int smoothSize = _borderSize > 0 ? _borderSize : 1;
 
-                // Draw border
-                if (_borderSize > 0)
-                    g.DrawPath(penBorder, pathBorder);
+                using (GraphicsPath pathSurface = GetFigurePath(rectSurface, _borderRadius))
+                using (GraphicsPath pathBorder = GetFigurePath(rectBorder, _borderRadius - _borderSize))
+                using (Pen penSurface = new Pen(Parent.BackColor, smoothSize))
+                using (Pen penBorder = new Pen(_borderColor, _borderSize))
+                using (SolidBrush brushText = new SolidBrush(_textColor))
+                {
+                    penSurface.StartCap = LineCap.Round;
+                    penSurface.EndCap = LineCap.Round;
+                    penSurface.LineJoin = LineJoin.Round;
 
-                // Calculate content area
-                Rectangle contentRect = new Rectangle(
-                    _textPadding,
-                    _textPadding,
-                    Width - (_textPadding * 2),
-                    Height - (_textPadding * 2)
-                );
+                    penBorder.StartCap = LineCap.Round;
+                    penBorder.EndCap = LineCap.Round;
+                    penBorder.LineJoin = LineJoin.Round;
+
+                    // Draw button surface
+                    g.FillPath(new SolidBrush(_isHovering ? _buttonHoverColor : _buttonColor), pathSurface);
+
+                    // Draw border
+                    if (_borderSize > 0)
+                        g.DrawPath(penBorder, pathBorder);
+
+                    // Calculate content area
+                    Rectangle contentRect = new Rectangle(
+                        _textPadding,
+                        _textPadding,
+                        Width - (_textPadding * 2),
+                        Height - (_textPadding * 2)
+                    );
 
 
-                // Draw content (text and icon)
-                DrawTextAndIcon(g, contentRect, brushText);
+                    // Draw content (text and icon)
+                    DrawTextAndIcon(g, contentRect, brushText);
+                }
             }
+            catch { }
         }
         #endregion
 

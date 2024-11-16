@@ -6,6 +6,7 @@ using System.Windows.Forms;
 
 namespace CustomControlsLibrary
 {
+    [ToolboxItem(true)]
     public class CustomTextBox : UserControl, IDisposable
     {
         // Fields
@@ -19,6 +20,7 @@ namespace CustomControlsLibrary
         private string _textValue = "";
         private bool _isPlaceholder = false;
         private bool _isPasswordChar = false;
+        private EventHandler internalTextChangedHandler;
 
         private PictureBox pictureBox;
         private ContentAlignment _iconAlign = ContentAlignment.MiddleLeft;
@@ -49,8 +51,10 @@ namespace CustomControlsLibrary
             textBox.Size = new Size(186, 15);
             textBox.ScrollBars = ScrollBars.None;
             textBox.TabIndex = 0;
-            textBox.Enter += new EventHandler(this.textBox_Enter);
-            textBox.Leave += new EventHandler(this.textBox_Leave);
+            textBox.Enter += new EventHandler(textBox_Enter);
+            textBox.Leave += new EventHandler(textBox_Leave);
+            internalTextChangedHandler = new EventHandler(InternalTextBox_TextChanged);
+            textBox.TextChanged += internalTextChangedHandler;
             //
             // pictureBox
             //
@@ -315,8 +319,6 @@ namespace CustomControlsLibrary
             }
             set
             {
-                _textValue = value;
-
                 if (!string.IsNullOrEmpty(_textValue))
                 {
                     RemovePlaceholder();
@@ -384,10 +386,7 @@ namespace CustomControlsLibrary
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
+            catch { }
         }
 
         protected override void OnResize(EventArgs e)
@@ -508,22 +507,31 @@ namespace CustomControlsLibrary
         // Event Methods
         private void textBox_Enter(object sender, EventArgs e)
         {
-            this.BorderColor = _borderFocusColor;
-            this.Invalidate();
+            BorderColor = _borderFocusColor;
+            Invalidate();
 
             RemovePlaceholder();
         }
 
         private void textBox_Leave(object sender, EventArgs e)
         {
-            this.BorderColor = _borderColor;
-            this.Invalidate();
+            BorderColor = _borderColor;
+            Invalidate();
             _textValue = textBox.Text;
             if (string.IsNullOrEmpty(_textValue))
             {
                 SetPlaceholder();
             }
         }
+
+        private void InternalTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (!_isPlaceholder)
+            {
+                _textValue = textBox.Text;
+            }
+        }
+
         #endregion
 
         #region Public Methods to Access TextBox Events
@@ -546,25 +554,25 @@ namespace CustomControlsLibrary
 
         #region Events
         // Events
-        public event EventHandler TextChanged
+        public new event EventHandler TextChanged
         {
             add { textBox.TextChanged += value; }
             remove { textBox.TextChanged -= value; }
         }
 
-        public event KeyEventHandler KeyDown
+        public new event KeyEventHandler KeyDown
         {
             add { textBox.KeyDown += value; }
             remove { textBox.KeyDown -= value; }
         }
 
-        public event KeyEventHandler KeyUp
+        public new event KeyEventHandler KeyUp
         {
             add { textBox.KeyUp += value; }
             remove { textBox.KeyUp -= value; }
         }
 
-        public event KeyPressEventHandler KeyPress
+        public new event KeyPressEventHandler KeyPress
         {
             add { textBox.KeyPress += value; }
             remove { textBox.KeyPress -= value; }
@@ -584,6 +592,7 @@ namespace CustomControlsLibrary
                     // Release managed resources
                     if (textBox != null)
                     {
+                        textBox.TextChanged -= internalTextChangedHandler;
                         textBox.Enter -= textBox_Enter;
                         textBox.Leave -= textBox_Leave;
                         pictureBox?.Dispose();

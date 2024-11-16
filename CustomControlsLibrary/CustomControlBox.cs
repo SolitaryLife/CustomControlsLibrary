@@ -6,6 +6,7 @@ using System.Windows.Forms;
 
 namespace CustomControlsLibrary
 {
+    [ToolboxItem(true)]
     public class CustomControlBox : UserControl
     {
         public enum ControlBoxType
@@ -231,7 +232,7 @@ namespace CustomControlsLibrary
 
                                 g.DrawPath(pen, path);
                             }
-                            
+
                             break;
 
                         case ControlBoxType.MaximizeBox:
@@ -308,10 +309,7 @@ namespace CustomControlsLibrary
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                throw new ArgumentException(ex.Message);
-            }
+            catch { }
         }
 
         // Mouse events
@@ -364,7 +362,7 @@ namespace CustomControlsLibrary
         {
             //if (disposing)
             //{
-               
+
             //}
             base.Dispose(disposing);
         }

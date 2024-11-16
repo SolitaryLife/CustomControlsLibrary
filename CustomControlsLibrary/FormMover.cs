@@ -1,34 +1,108 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace CustomControlsLibrary
 {
-    public class FormMover
+    [ToolboxItem(true)]
+    public class FormMover : Component
     {
-        public const int WM_NCLBUTTONDOWN = 0xA1;
-        public const int HT_CAPTION = 0x2;
+        private Form _targetForm = null;
+        private const int WM_NCLBUTTONDOWN = 0xA1;
+        private const int HT_CAPTION = 0x2;
+        private Control _propertieControl = null;
+
+        private List<Control> _controls = new List<Control>();
 
         [DllImport("user32.dll")]
-        public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+        private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
         [DllImport("user32.dll")]
-        public static extern bool ReleaseCapture();
+        private static extern bool ReleaseCapture();
 
-        public static void Move(Control control)
+        [Category("Custom FormMover")]
+        [Description("The control that will be used to move the form.")]
+        public Control TargetControl
         {
-            control.MouseDown += (sender, e) =>
+            get
             {
-                if (e.Button == MouseButtons.Left)
+                return _propertieControl;
+            }
+            set
+            {
+                _propertieControl = value;
+
+                if (_propertieControl != null)
                 {
-                    Form form = control.FindForm();
-                    if (form != null)
+                    if (_controls.Contains(_propertieControl))
                     {
-                        ReleaseCapture();
-                        SendMessage(form.Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
+                        _propertieControl.MouseDown -= Control_MouseDown;
+                        _controls.Remove(_propertieControl);
+                    }
+
+                    if (!_controls.Contains(_propertieControl))
+                    {
+                        _propertieControl.MouseDown += Control_MouseDown;
+                        _controls.Add(_propertieControl);
                     }
                 }
-            };
+
+                if (value != null && !_controls.Contains(value))
+                {
+
+                    value.MouseDown += Control_MouseDown;
+                    _propertieControl = value;
+                    _controls.Add(value);
+                }
+            }
+        }
+
+        public void Move(Control control)
+        {
+            if (!_controls.Contains(control))
+            {
+                control.MouseDown += Control_MouseDown;
+                _controls.Add(control);
+            }
+        }
+
+        private void Control_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (sender is Control control && e.Button == MouseButtons.Left)
+            {
+                if (_targetForm == null)
+                {
+                    _targetForm = control.FindForm();
+                }
+                if (_targetForm != null)
+                {
+                    ReleaseCapture();
+                    SendMessage(_targetForm.Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
+                }
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (var control in _controls)
+                {
+                    control.MouseDown -= Control_MouseDown;
+                }
+                _controls.Clear();
+                _propertieControl = null;
+                _targetForm = null;
+            }
+
+            base.Dispose(disposing);
+        }
+
+        ~FormMover()
+        {
+            Dispose(true);
         }
     }
 }

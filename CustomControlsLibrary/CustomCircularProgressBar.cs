@@ -7,6 +7,7 @@ using System.Windows.Forms;
 
 namespace CustomControlsLibrary
 {
+    [ToolboxItem(true)]
     public class CustomCircularProgressBar : UserControl
     {
         private Timer _timer;
@@ -272,10 +273,7 @@ namespace CustomControlsLibrary
                     }
                 }
             }
-            catch(Exception ex) 
-            { 
-                throw new ArgumentException(ex.Message);
-            }
+            catch { }
         }
 
         protected override void OnSizeChanged(EventArgs e)
