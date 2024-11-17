@@ -270,10 +270,11 @@ namespace CustomControlsLibrary
         [Description("Sets the font style of the text")]
         public override Font Font
         {
-            get => _buttonFont;
+            get => base.Font;
             set
             {
                 _buttonFont = value;
+                base.Font = value;
                 Invalidate();
             }
         }
