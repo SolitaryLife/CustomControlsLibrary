@@ -7,7 +7,7 @@ using System.Windows.Forms;
 namespace CustomControlsLibrary
 {
     [ToolboxItem(true)]
-    public class FormMover : Component
+    public class CustomFormMover : Component
     {
         private Form _targetForm = null;
         private const int WM_NCLBUTTONDOWN = 0xA1;
@@ -100,7 +100,7 @@ namespace CustomControlsLibrary
             base.Dispose(disposing);
         }
 
-        ~FormMover()
+        ~CustomFormMover()
         {
             Dispose(true);
         }
