@@ -12,7 +12,7 @@ namespace CustomControlsLibrary
         #region Fields
         private Color _borderColor = Color.MediumSlateBlue;
         private int _borderSize = 2;
-        private BorderRadius _borderRadius;
+        private BorderRadius _borderRadius = new BorderRadius(0);
         private Color _buttonColor = Color.MediumSlateBlue;
         private Color _buttonHoverColor = Color.LightSkyBlue;
         private Color _textColor = Color.White;
@@ -184,6 +184,7 @@ namespace CustomControlsLibrary
 
         [Category("Custom Button")]
         [Description("Sets the corner radius of the button")]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         public BorderRadius Borderradius
         {
             get => _borderRadius;

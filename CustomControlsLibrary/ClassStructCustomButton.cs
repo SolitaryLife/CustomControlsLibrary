@@ -6,8 +6,9 @@ namespace CustomControlsLibrary
 {
     public partial class CustomButton
     {
+        [Serializable]
         [TypeConverter(typeof(BorderRadiusSTypeConverter))]
-        public struct BorderRadius
+        public class BorderRadius
         {
             private int _radiusTopLeft;
             private int _radiusTopRight;
