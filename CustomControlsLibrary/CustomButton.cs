@@ -458,7 +458,22 @@ namespace CustomControlsLibrary
         }
         #endregion
 
-        #region Helper Methods
+        #region Methods
+        /// <summary>
+        /// Simulates a click event on the button by directly invoking the Click event handler.
+        /// </summary>
+        /// <remarks>
+        /// This method is useful for triggering the Click event programmatically,
+        /// as if the user had clicked the button manually. It bypasses user input
+        /// and directly raises the event with empty event arguments.
+        /// </remarks>
+        public void PerformClick()
+        {
+            base.OnClick(EventArgs.Empty);
+        }
+        #endregion
+
+        #region Helper Methods Graphics
         private GraphicsPath GetFigurePath(Rectangle rect, int radiusTopLeft = 0, int radiusTopRight = 0, int radiusBottomLeft = 0, int radiusBottomRight = 0)
         {
             GraphicsPath path = new GraphicsPath();
