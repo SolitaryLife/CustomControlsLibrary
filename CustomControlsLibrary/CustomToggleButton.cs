@@ -17,7 +17,7 @@ namespace CustomControlsLibrary
         private Color _offToggleColor = Color.Gainsboro;
         private bool _solidStyle = true;
         private int _toggleSize = 20;
-        private int _padding = 10;
+        private int _padding = 2;
         private bool _isHovered = false;
         private bool _useAnimation = true;
         private int _animationInterval = 1;
@@ -147,21 +147,21 @@ namespace CustomControlsLibrary
         //    }
         //}
 
-        //[Category("Custom Toggle")]
-        //[DefaultValue(2)]
-        //[Description("Gets or sets the padding between toggle and border")]
-        //public int TogglePadding
-        //{
-        //    get => _padding;
-        //    set
-        //    {
-        //        if (value >= 0)
-        //        {
-        //            _padding = Math.Min((Height / 2) - 1, value);
-        //            Invalidate();
-        //        }
-        //    }
-        //}
+        [Category("Custom Toggle")]
+        [DefaultValue(2)]
+        [Description("Gets or sets the padding between toggle and border")]
+        public int TogglePadding
+        {
+            get => _padding;
+            set
+            {
+                if (value >= 0)
+                {
+                    _padding = Math.Min((Height / 2) - 1, value);
+                    Invalidate();
+                }
+            }
+        }
 
         [Category("Custom Toggle")]
         [DefaultValue(true)]

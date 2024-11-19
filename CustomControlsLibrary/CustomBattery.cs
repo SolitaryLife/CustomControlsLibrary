@@ -56,6 +56,7 @@ namespace CustomControlsLibrary
                     ControlStyles.UserPaint, true);
 
             this.MinimumSize = new Size(30, 15);
+            this.Size = new Size(330, 150);
             this._percentageFont = new Font(this.Font.FontFamily, 8f);
             this.BackColor = Color.Transparent;
 
