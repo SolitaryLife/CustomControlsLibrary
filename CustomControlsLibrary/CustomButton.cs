@@ -461,40 +461,39 @@ namespace CustomControlsLibrary
         #region Helper Methods
         private GraphicsPath GetFigurePath(Rectangle rect, int radiusTopLeft = 0, int radiusTopRight = 0, int radiusBottomLeft = 0, int radiusBottomRight = 0)
         {
-            using (GraphicsPath path = new GraphicsPath())
-            {
-                float curveSize = radiusTopLeft;
-                path.StartFigure();
+            GraphicsPath path = new GraphicsPath();
 
-                // Top Left
-                if (radiusTopLeft > 0)
-                    path.AddArc(rect.X, rect.Y, radiusTopLeft * 2, radiusTopLeft * 2, 180, 90);
-                else
-                    path.AddLine(rect.X, rect.Y, rect.X, rect.Y);
+            float curveSize = radiusTopLeft;
+            path.StartFigure();
 
-                // Top Right
-                if (radiusTopRight > 0)
-                    path.AddArc(rect.Right - (radiusTopRight * 2), rect.Y, radiusTopRight * 2, radiusTopRight * 2, 270, 90);
-                else
-                    path.AddLine(rect.Right, rect.Y, rect.Right, rect.Y);
+            // Top Left
+            if (radiusTopLeft > 0)
+                path.AddArc(rect.X, rect.Y, radiusTopLeft * 2, radiusTopLeft * 2, 180, 90);
+            else
+                path.AddLine(rect.X, rect.Y, rect.X, rect.Y);
 
-                // Bottom Right
-                if (radiusBottomRight > 0)
-                    path.AddArc(rect.Right - (radiusBottomRight * 2), rect.Bottom - (radiusBottomRight * 2),
-                        radiusBottomRight * 2, radiusBottomRight * 2, 0, 90);
-                else
-                    path.AddLine(rect.Right, rect.Bottom, rect.Right, rect.Bottom);
+            // Top Right
+            if (radiusTopRight > 0)
+                path.AddArc(rect.Right - (radiusTopRight * 2), rect.Y, radiusTopRight * 2, radiusTopRight * 2, 270, 90);
+            else
+                path.AddLine(rect.Right, rect.Y, rect.Right, rect.Y);
 
-                // Bottom Left
-                if (radiusBottomLeft > 0)
-                    path.AddArc(rect.X, rect.Bottom - (radiusBottomLeft * 2),
-                        radiusBottomLeft * 2, radiusBottomLeft * 2, 90, 90);
-                else
-                    path.AddLine(rect.X, rect.Bottom, rect.X, rect.Bottom);
+            // Bottom Right
+            if (radiusBottomRight > 0)
+                path.AddArc(rect.Right - (radiusBottomRight * 2), rect.Bottom - (radiusBottomRight * 2),
+                    radiusBottomRight * 2, radiusBottomRight * 2, 0, 90);
+            else
+                path.AddLine(rect.Right, rect.Bottom, rect.Right, rect.Bottom);
 
-                path.CloseFigure();
-                return path;
-            }   
+            // Bottom Left
+            if (radiusBottomLeft > 0)
+                path.AddArc(rect.X, rect.Bottom - (radiusBottomLeft * 2),
+                    radiusBottomLeft * 2, radiusBottomLeft * 2, 90, 90);
+            else
+                path.AddLine(rect.X, rect.Bottom, rect.X, rect.Bottom);
+
+            path.CloseFigure();
+            return path;
         }
         #endregion
 

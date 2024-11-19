@@ -99,9 +99,10 @@ namespace CustomControlsLibrary
                     _propertieControl = null;
                     _targetForm = null;
                 }
-
                 _isDispose = true;
             }
+            
+
             base.Dispose(disposing);
         }
 

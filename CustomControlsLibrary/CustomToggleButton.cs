@@ -280,15 +280,13 @@ namespace CustomControlsLibrary
 
         private GraphicsPath GetRoundedRectangle(Rectangle bounds, int radius)
         {
-            using (var path = new GraphicsPath())
-            {
-                path.AddArc(bounds.X, bounds.Y, radius * 2, radius * 2, 180, 90);
-                path.AddArc(bounds.Right - radius * 2, bounds.Y, radius * 2, radius * 2, 270, 90);
-                path.AddArc(bounds.Right - radius * 2, bounds.Bottom - radius * 2, radius * 2, radius * 2, 0, 90);
-                path.AddArc(bounds.X, bounds.Bottom - radius * 2, radius * 2, radius * 2, 90, 90);
-                path.CloseFigure();
-                return path;
-            }
+            var path = new GraphicsPath();
+            path.AddArc(bounds.X, bounds.Y, radius * 2, radius * 2, 180, 90);
+            path.AddArc(bounds.Right - radius * 2, bounds.Y, radius * 2, radius * 2, 270, 90);
+            path.AddArc(bounds.Right - radius * 2, bounds.Bottom - radius * 2, radius * 2, radius * 2, 0, 90);
+            path.AddArc(bounds.X, bounds.Bottom - radius * 2, radius * 2, radius * 2, 90, 90);
+            path.CloseFigure();
+            return path;
         }
 
         #region Events
@@ -325,7 +323,7 @@ namespace CustomControlsLibrary
                 }
                 _isDispose = true;
             }
-          
+
             base.Dispose(disposing);
         }
 

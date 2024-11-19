@@ -301,8 +301,8 @@ namespace CustomControlsLibrary
                         _timer = null;
                     }
                 }
-
                 SizeChanged -= CustomCircularProgressBar_SizeChanged;
+
                 _isDispose = true;
             }
 
