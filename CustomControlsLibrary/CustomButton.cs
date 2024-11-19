@@ -461,39 +461,40 @@ namespace CustomControlsLibrary
         #region Helper Methods
         private GraphicsPath GetFigurePath(Rectangle rect, int radiusTopLeft = 0, int radiusTopRight = 0, int radiusBottomLeft = 0, int radiusBottomRight = 0)
         {
-            GraphicsPath path = new GraphicsPath();
+            using (GraphicsPath path = new GraphicsPath())
+            {
+                float curveSize = radiusTopLeft;
+                path.StartFigure();
 
-            float curveSize = radiusTopLeft;
-            path.StartFigure();
+                // Top Left
+                if (radiusTopLeft > 0)
+                    path.AddArc(rect.X, rect.Y, radiusTopLeft * 2, radiusTopLeft * 2, 180, 90);
+                else
+                    path.AddLine(rect.X, rect.Y, rect.X, rect.Y);
 
-            // Top Left
-            if (radiusTopLeft > 0)
-                path.AddArc(rect.X, rect.Y, radiusTopLeft * 2, radiusTopLeft * 2, 180, 90);
-            else
-                path.AddLine(rect.X, rect.Y, rect.X, rect.Y);
+                // Top Right
+                if (radiusTopRight > 0)
+                    path.AddArc(rect.Right - (radiusTopRight * 2), rect.Y, radiusTopRight * 2, radiusTopRight * 2, 270, 90);
+                else
+                    path.AddLine(rect.Right, rect.Y, rect.Right, rect.Y);
 
-            // Top Right
-            if (radiusTopRight > 0)
-                path.AddArc(rect.Right - (radiusTopRight * 2), rect.Y, radiusTopRight * 2, radiusTopRight * 2, 270, 90);
-            else
-                path.AddLine(rect.Right, rect.Y, rect.Right, rect.Y);
+                // Bottom Right
+                if (radiusBottomRight > 0)
+                    path.AddArc(rect.Right - (radiusBottomRight * 2), rect.Bottom - (radiusBottomRight * 2),
+                        radiusBottomRight * 2, radiusBottomRight * 2, 0, 90);
+                else
+                    path.AddLine(rect.Right, rect.Bottom, rect.Right, rect.Bottom);
 
-            // Bottom Right
-            if (radiusBottomRight > 0)
-                path.AddArc(rect.Right - (radiusBottomRight * 2), rect.Bottom - (radiusBottomRight * 2),
-                    radiusBottomRight * 2, radiusBottomRight * 2, 0, 90);
-            else
-                path.AddLine(rect.Right, rect.Bottom, rect.Right, rect.Bottom);
+                // Bottom Left
+                if (radiusBottomLeft > 0)
+                    path.AddArc(rect.X, rect.Bottom - (radiusBottomLeft * 2),
+                        radiusBottomLeft * 2, radiusBottomLeft * 2, 90, 90);
+                else
+                    path.AddLine(rect.X, rect.Bottom, rect.X, rect.Bottom);
 
-            // Bottom Left
-            if (radiusBottomLeft > 0)
-                path.AddArc(rect.X, rect.Bottom - (radiusBottomLeft * 2),
-                    radiusBottomLeft * 2, radiusBottomLeft * 2, 90, 90);
-            else
-                path.AddLine(rect.X, rect.Bottom, rect.X, rect.Bottom);
-
-            path.CloseFigure();
-            return path;
+                path.CloseFigure();
+                return path;
+            }   
         }
         #endregion
 
@@ -506,15 +507,21 @@ namespace CustomControlsLibrary
         #endregion
 
         #region Dispose
+        private bool _isDispose = false;
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!_isDispose)
             {
-                MouseEnter -= internalHandlerMouseEnter;
-                MouseLeave -= internalHandlerMouseLeave;
-                _buttonFont?.Dispose();
-                _icon?.Dispose();
+                if (disposing)
+                {
+                    MouseEnter -= internalHandlerMouseEnter;
+                    MouseLeave -= internalHandlerMouseLeave;
+                    _buttonFont?.Dispose();
+                    _icon?.Dispose();
+                }
+                _isDispose = true;
             }
+            
             base.Dispose(disposing);
         }
         ~CustomButton()

@@ -84,19 +84,24 @@ namespace CustomControlsLibrary
             }
         }
 
+        private bool _isDispose = false;
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!_isDispose)
             {
-                foreach (var control in _controls)
+                if (disposing)
                 {
-                    control.MouseDown -= Control_MouseDown;
+                    foreach (var control in _controls)
+                    {
+                        control.MouseDown -= Control_MouseDown;
+                    }
+                    _controls.Clear();
+                    _propertieControl = null;
+                    _targetForm = null;
                 }
-                _controls.Clear();
-                _propertieControl = null;
-                _targetForm = null;
-            }
 
+                _isDispose = true;
+            }
             base.Dispose(disposing);
         }
 

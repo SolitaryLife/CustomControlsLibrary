@@ -286,20 +286,26 @@ namespace CustomControlsLibrary
         #endregion
 
         #region Dispose
+        private bool _isDispose = false;
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!_isDispose)
             {
-                if (_timer != null)
+                if (disposing)
                 {
-                    _timer.Stop();
-                    _timer.Tick -= Timer_Tick;
-                    _timer.Dispose();
-                    _timer = null;
+                    if (_timer != null)
+                    {
+                        _timer.Stop();
+                        _timer.Tick -= Timer_Tick;
+                        _timer.Dispose();
+                        _timer = null;
+                    }
                 }
+
+                SizeChanged -= CustomCircularProgressBar_SizeChanged;
+                _isDispose = true;
             }
 
-            SizeChanged -= CustomCircularProgressBar_SizeChanged;
             base.Dispose(disposing);
         }
 
