@@ -48,6 +48,9 @@
     <Compile Include="ClassStructCustomButton.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="CustomBattery.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="CustomButton.cs">
       <SubType>UserControl</SubType>
     </Compile>
