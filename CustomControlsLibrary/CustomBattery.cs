@@ -454,46 +454,41 @@ namespace CustomControlsLibrary
         // Helper methods for shapes
         private GraphicsPath GetRoundedRectangle(float x, float y, float width, float height, float radius)
         {
-            using (var path = new GraphicsPath())
+            GraphicsPath path = new GraphicsPath();
+
+            if (radius <= 0)
             {
-                if (radius <= 0)
-                {
-                    path.AddRectangle(new RectangleF(x, y, width, height));
-                    return path;
-                }
-
-                radius = Math.Min(radius, Math.Min(width / 2, height / 2));
-
-                path.AddArc(x, y, radius * 2, radius * 2, 180, 90);
-                path.AddArc(x + width - radius * 2, y, radius * 2, radius * 2, 270, 90);
-                path.AddArc(x + width - radius * 2, y + height - radius * 2, radius * 2, radius * 2, 0, 90);
-                path.AddArc(x, y + height - radius * 2, radius * 2, radius * 2, 90, 90);
-                path.CloseFigure();
-
+                path.AddRectangle(new RectangleF(x, y, width, height));
                 return path;
             }
+
+            radius = Math.Min(radius, Math.Min(width / 2, height / 2));
+
+            path.AddArc(x, y, radius * 2, radius * 2, 180, 90);
+            path.AddArc(x + width - radius * 2, y, radius * 2, radius * 2, 270, 90);
+            path.AddArc(x + width - radius * 2, y + height - radius * 2, radius * 2, radius * 2, 0, 90);
+            path.AddArc(x, y + height - radius * 2, radius * 2, radius * 2, 90, 90);
+            path.CloseFigure();
+
+            return path;
         }
 
         private GraphicsPath GetCapsulePath(float x, float y, float width, float height)
         {
             float radius = height / 2;
-            using (var path = new GraphicsPath())
-            {
-                path.AddArc(x, y, height, height, 90, 180);
-                path.AddArc(x + width - height, y, height, height, 270, 180);
-                path.CloseFigure();
+            GraphicsPath path = new GraphicsPath();
+            path.AddArc(x, y, height, height, 90, 180);
+            path.AddArc(x + width - height, y, height, height, 270, 180);
+            path.CloseFigure();
 
-                return path;
-            }
+            return path;
         }
 
         private GraphicsPath GetBatteryPath(int width, int height)
         {
-            using (var path = new GraphicsPath())
-            {
-                path.AddRectangle(new Rectangle(-5, -5, width + 10, height + 10));
-                return path;
-            }
+            GraphicsPath path = new GraphicsPath();
+            path.AddRectangle(new Rectangle(-5, -5, width + 10, height + 10));
+            return path;
         }
 
         private Color GetBatteryColor()
