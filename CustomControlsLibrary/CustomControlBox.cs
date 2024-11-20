@@ -21,6 +21,7 @@ namespace CustomControlsLibrary
         private bool isHovered = false;
         private ControlBoxType boxType = ControlBoxType.CloseBox;
         private int buttonSize = 32;
+        private int _iconSize = 12;
         private Cursor customCursor = Cursors.Hand;
         private Color iconColor = Color.White;
         private float iconScale = 1.0f;
@@ -51,6 +52,19 @@ namespace CustomControlsLibrary
         {
             get => DoubleBuffered;
             set => DoubleBuffered = value;
+        }
+
+        [Category("Custom ControlBox")]
+        [Description("The size of the icon.")]
+        [DefaultValue(12)]
+        public int IconSize
+        {
+            get => _iconSize;
+            set
+            {
+                _iconSize = value;
+                Invalidate();
+            }
         }
 
         [Category("Custom ControlBox")]
@@ -198,26 +212,24 @@ namespace CustomControlsLibrary
                     g.FillRectangle(brush, 0, 0, Width, Height);
                 }
 
-                // Draw Icon
+                // Draw Icon with modified calculations
                 using (var pen = new Pen(iconColor, iconThickness))
                 {
                     pen.StartCap = LineCap.Round;
                     pen.EndCap = LineCap.Round;
                     pen.LineJoin = LineJoin.Round;
 
-                    // Calculate new padding according to scale
-                    float basePadding = buttonSize / 4.0f;
-                    float scaledPadding = basePadding / iconScale;
+                    // Calculate icon size based on control size and IconSize property
+                    float actualIconSize = Math.Min(Width, Height) * (_iconSize / 32f) * iconScale;
+                    float centerX = Width / 2.0f;
+                    float centerY = Height / 2.0f;
+                    float halfSize = actualIconSize / 2.0f;
 
                     switch (boxType)
                     {
                         case ControlBoxType.CloseBox:
                             using (var path = new GraphicsPath())
                             {
-                                float centerX = Width / 2.0f;
-                                float centerY = Height / 2.0f;
-                                float halfSize = ((Width - (2 * scaledPadding)) / 2.0f) * iconScale;
-
                                 path.StartFigure();
                                 path.AddLine(
                                     centerX - halfSize, centerY - halfSize,
@@ -232,14 +244,9 @@ namespace CustomControlsLibrary
 
                                 g.DrawPath(pen, path);
                             }
-
                             break;
 
                         case ControlBoxType.MaximizeBox:
-                            float rectSize = Width - (2 * scaledPadding);
-                            float rectX = (Width - rectSize) / 2.0f;
-                            float rectY = (Height - rectSize) / 2.0f;
-
                             if (targetForm == null)
                             {
                                 targetForm = FindForm();
@@ -248,31 +255,27 @@ namespace CustomControlsLibrary
 
                             if (isMaximized)
                             {
-                                // Draw a front (small) square.
-                                float smallRectOffset = rectSize * 0.15f;  // distance between squares
+                                float smallRectOffset = actualIconSize * 0.15f;
 
                                 using (var path = new GraphicsPath())
                                 {
                                     RectangleF backRect = new RectangleF(
-                                        rectX,
-                                        rectY,
-                                        rectSize - smallRectOffset,
-                                        rectSize - smallRectOffset
+                                        centerX - halfSize,
+                                        centerY - halfSize,
+                                        actualIconSize - smallRectOffset,
+                                        actualIconSize - smallRectOffset
                                     );
-                                    path.AddRectangle(backRect);
-                                    g.DrawPath(pen, path);
                                     path.AddRectangle(backRect);
                                     g.DrawPath(pen, path);
                                 }
 
-                                // Draw next to it (large)
                                 using (var path = new GraphicsPath())
                                 {
                                     RectangleF frontRect = new RectangleF(
-                                        rectX + smallRectOffset,
-                                        rectY + smallRectOffset,
-                                        rectSize - smallRectOffset,
-                                        rectSize - smallRectOffset
+                                        centerX - halfSize + smallRectOffset,
+                                        centerY - halfSize + smallRectOffset,
+                                        actualIconSize - smallRectOffset,
+                                        actualIconSize - smallRectOffset
                                     );
                                     path.AddRectangle(frontRect);
                                     g.DrawPath(pen, path);
@@ -282,7 +285,12 @@ namespace CustomControlsLibrary
                             {
                                 using (var path = new GraphicsPath())
                                 {
-                                    RectangleF rect = new RectangleF(rectX, rectY, rectSize, rectSize);
+                                    RectangleF rect = new RectangleF(
+                                        centerX - halfSize,
+                                        centerY - halfSize,
+                                        actualIconSize,
+                                        actualIconSize
+                                    );
                                     path.AddRectangle(rect);
                                     g.DrawPath(pen, path);
                                 }
@@ -290,17 +298,12 @@ namespace CustomControlsLibrary
                             break;
 
                         case ControlBoxType.MinimizeBox:
-
                             using (var path = new GraphicsPath())
                             {
-                                float lineY = Height / 2.0f;
-                                float lineWidth = (Width - (2 * scaledPadding)) * iconScale;
-                                float lineX = (Width - lineWidth) / 2.0f;
-
                                 path.StartFigure();
                                 path.AddLine(
-                                    lineX, lineY,
-                                    lineX + lineWidth, lineY
+                                    centerX - halfSize, centerY,
+                                    centerX + halfSize, centerY
                                 );
 
                                 g.DrawPath(pen, path);
