@@ -285,7 +285,6 @@ namespace CustomControlsLibrary
         public CustomButton()
         {
             DoubleBuffered = true;
-            MinimumSize = new Size(100, 40);
             Size = new Size(150, 40);
             BackColor = Color.Transparent;
             ForeColor = Color.White;
