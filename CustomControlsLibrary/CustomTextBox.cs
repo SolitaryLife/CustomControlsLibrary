@@ -13,6 +13,7 @@ namespace CustomControlsLibrary
         private TextBox textBox;
         private Color _borderColor = Color.MediumSlateBlue;
         private Color _borderFocusColor = Color.HotPink;
+        private Color _borderColorChange = Color.Transparent;
         private int _borderSize = 2;
         private bool _underlinedStyle = false;
         private Color _placeholderColor = Color.DarkGray;
@@ -167,7 +168,7 @@ namespace CustomControlsLibrary
             get => _borderColor;
             set
             {
-                _borderColor = value;
+                _borderColorChange  = _borderColor = value;
                 this.Invalidate();
             }
         }
@@ -372,7 +373,7 @@ namespace CustomControlsLibrary
                 g.InterpolationMode = InterpolationMode;
                 g.PixelOffsetMode = PixelOffsetMode;
 
-                using (Pen penBorder = new Pen(_borderColor, _borderSize))
+                using (Pen penBorder = new Pen(_borderColorChange, _borderSize))
                 {
                     penBorder.StartCap = LineCap.Round;
                     penBorder.EndCap = LineCap.Round;
@@ -509,7 +510,7 @@ namespace CustomControlsLibrary
         // Event Methods
         private void textBox_Enter(object sender, EventArgs e)
         {
-            BorderColor = _borderFocusColor;
+            _borderColorChange = _borderFocusColor;
             Invalidate();
 
             RemovePlaceholder();
@@ -517,7 +518,7 @@ namespace CustomControlsLibrary
 
         private void textBox_Leave(object sender, EventArgs e)
         {
-            BorderColor = _borderColor;
+            _borderColorChange = _borderColor;
             Invalidate();
             _textValue = textBox.Text;
             if (string.IsNullOrEmpty(_textValue))
