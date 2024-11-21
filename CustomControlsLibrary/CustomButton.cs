@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace CustomControlsLibrary
@@ -17,6 +18,15 @@ namespace CustomControlsLibrary
         private Color _buttonHoverColor = Color.LightSkyBlue;
         private Color _textColor = Color.White;
         private bool _isHovering = false;
+        private bool _underline = false;
+        private Color _underlineColor = Color.Black;
+        private int _underlineThickness = 2;
+
+        private ButtonType _buttonType = ButtonType.Normal;
+        private bool _isToggled = false;
+        private Color _toggledColor = Color.DarkSlateBlue;
+        private Color _toggledTextColor = Color.White;
+        private Color _toggledUnderlineColor = Color.DarkSlateBlue;
 
         private bool _autoEllipsis = false;
         private bool _multiline = false;
@@ -30,8 +40,6 @@ namespace CustomControlsLibrary
         private ContentAlignment _textAlign = ContentAlignment.MiddleCenter;
         private Font _buttonFont = new Font("Segoe UI", 12F);
         private int _textPadding = 5;
-        private EventHandler internalHandlerMouseEnter;
-        private EventHandler internalHandlerMouseLeave;
 
         #region Enums
         public enum IconTextAlignment
@@ -44,6 +52,13 @@ namespace CustomControlsLibrary
         {
             Horizontal,
             Vertical
+        }
+
+        public enum ButtonType
+        {
+            Normal,
+            Toggle,
+            Radio
         }
         #endregion
 
@@ -72,6 +87,112 @@ namespace CustomControlsLibrary
         {
             get => DoubleBuffered;
             set => DoubleBuffered = value;
+        }
+
+        [Category("Custom Button")]
+        [Description("Sets the type of button (Normal/Toggle)")]
+        public ButtonType ButtonTypes
+        {
+            get => _buttonType;
+            set
+            {
+                _buttonType = value;
+                Invalidate();
+            }
+        }
+
+        [Category("Custom Button")]
+        [Description("Gets or sets the toggled state for Toggle type buttons")]
+        public bool Checked
+        {
+            get => _isToggled;
+            set
+            {
+                if (_buttonType == ButtonType.Toggle || _buttonType == ButtonType.Radio)
+                {
+                    _isToggled = value;
+                    Invalidate();
+                    OnToggledChanged(EventArgs.Empty);
+                }
+                else
+                {
+                    _isToggled = false;
+                    Invalidate();
+                }
+            }
+        }
+
+        [Category("Custom Button")]
+        [Description("Sets the background color when button is toggled")]
+        public Color ToggledColor
+        {
+            get => _toggledColor;
+            set
+            {
+                _toggledColor = value;
+                Invalidate();
+            }
+        }
+
+        [Category("Custom Button")]
+        [Description("Sets the text color when button is toggled")]
+        public Color ToggledTextColor
+        {
+            get => _toggledTextColor;
+            set
+            {
+                _toggledTextColor = value;
+                Invalidate();
+            }
+        }
+
+        [Category("Custom Button")]
+        [Description("Sets the border color when button is toggled")]
+        public Color ToggledUnderlineColor
+        {
+            get => _toggledUnderlineColor;
+            set
+            {
+                _toggledUnderlineColor = value;
+                Invalidate();
+            }
+        }
+
+
+        [Category("Custom Button")]
+        [Description("Enable or disable underline")]
+        public bool Underline
+        {
+            get => _underline;
+            set
+            {
+                _underline = value;
+                Invalidate();
+            }
+        }
+
+        [Category("Custom Button")]
+        [Description("Sets the color of the underline")]
+        public Color UnderlineColor
+        {
+            get => _underlineColor;
+            set
+            {
+                _underlineColor = value;
+                Invalidate();
+            }
+        }
+
+        [Category("Custom Button")]
+        [Description("Sets the thickness of the underline")]
+        public int UnderlineThickness
+        {
+            get => _underlineThickness;
+            set
+            {
+                _underlineThickness = Math.Max(1, value);
+                Invalidate();
+            }
         }
 
         [Category("Custom Button")]
@@ -233,7 +354,7 @@ namespace CustomControlsLibrary
 
         [Category("Custom Button")]
         [Description("Sets the text displayed on the button")]
-        public  string Texts
+        public string Texts
         {
             get => _buttonText;
             set
@@ -296,6 +417,13 @@ namespace CustomControlsLibrary
             _iconTextAlignment = IconTextAlignment.TextBeforeIcon;
             _iconTextLayout = IconTextLayout.Horizontal;
 
+            _underline = false;
+            _underlineColor = Color.Black;
+            _underlineThickness = 2;
+
+            Clicked = CustomClicked;
+            Click += Clicked;
+
             internalHandlerMouseEnter = CustomButton_MouseEnter;
             internalHandlerMouseLeave = CustomButton_MouseLeave;
 
@@ -307,6 +435,40 @@ namespace CustomControlsLibrary
         #endregion
 
         #region Event Handlers
+        private event EventHandler Clicked;
+        private void CustomClicked(object sender, EventArgs e)
+        {
+            switch (_buttonType)
+            {
+                case ButtonType.Toggle:
+                    Checked = !Checked;
+                    break;
+                case ButtonType.Radio:
+                    if (!Checked)
+                    {
+                        Checked = true;
+                        Parent?.Controls?.OfType<CustomButton>()
+                       ?.Where(w => w.Name != Name && w.ButtonTypes == ButtonType.Radio)
+                       .ToList()
+                       .ForEach(c => c.Checked = false);
+                    }
+                    break;
+            }
+        }
+
+        // [Category("Custom Button")]
+        // [Description("Occurs when the toggle state changes")]
+
+        private event EventHandler ToggledChanged;
+
+        protected virtual void OnToggledChanged(EventArgs e)
+        {
+            ToggledChanged?.Invoke(this, e);
+        }
+
+        private EventHandler internalHandlerMouseEnter;
+        private EventHandler internalHandlerMouseLeave;
+
         private void CustomButton_MouseEnter(object sender, EventArgs e)
         {
             _isHovering = true;
@@ -341,40 +503,117 @@ namespace CustomControlsLibrary
                         _borderRadius.TopRight,
                         _borderRadius.BottomLeft,
                         _borderRadius.BottomRight))
+
                 using (GraphicsPath pathBorder = GetFigurePath(rectBorder,
                         _borderRadius.TopLeft - _borderSize,
                         _borderRadius.TopRight - _borderSize,
                         _borderRadius.BottomLeft - _borderSize,
                         _borderRadius.BottomRight - _borderSize))
-                using (Pen penSurface = new Pen(Parent.BackColor, smoothSize))
-                using (Pen penBorder = new Pen(_borderColor, _borderSize))
-                using (SolidBrush brushText = new SolidBrush(_textColor))
                 {
-                    penSurface.StartCap = LineCap.Round;
-                    penSurface.EndCap = LineCap.Round;
-                    penSurface.LineJoin = LineJoin.Round;
+                    // Determine colors based on button state
+                    Color currentBackColor;
+                    Color currentBorderColor;
+                    Color currentTextColor;
 
-                    penBorder.StartCap = LineCap.Round;
-                    penBorder.EndCap = LineCap.Round;
-                    penBorder.LineJoin = LineJoin.Round;
+                    switch (_buttonType)
+                    {
+                        case ButtonType.Radio:
+                        case ButtonType.Toggle:
+                        default:
+                            if (_isToggled)
+                            {
+                                currentBackColor = _isHovering ? _buttonHoverColor : _buttonColor;
+                                currentBorderColor = _borderColor;
+                                currentTextColor = _textColor;
+                            }
+                            else
+                            {
+                                currentBackColor = _isHovering ? _buttonHoverColor : _buttonColor;
+                                currentBorderColor = _borderColor;
+                                currentTextColor = _textColor;
+                            }
+                            break;
+                    }
 
-                    // Draw button surface
-                    g.FillPath(new SolidBrush(_isHovering ? _buttonHoverColor : _buttonColor), pathSurface);
+                    using (Pen penSurface = new Pen(Parent.BackColor, smoothSize))
+                    using (Pen penBorder = new Pen(!_underline ? currentBorderColor : Color.Transparent, _borderSize))
+                    using (SolidBrush brushText = new SolidBrush(currentTextColor))
+                    {
+                        penSurface.StartCap = LineCap.Round;
+                        penSurface.EndCap = LineCap.Round;
+                        penSurface.LineJoin = LineJoin.Round;
 
-                    // Draw border
-                    if (_borderSize > 0)
-                        g.DrawPath(penBorder, pathBorder);
+                        penBorder.StartCap = LineCap.Round;
+                        penBorder.EndCap = LineCap.Round;
+                        penBorder.LineJoin = LineJoin.Round;
 
-                    // Calculate content area
-                    Rectangle contentRect = new Rectangle(
-                        _textPadding,
-                        _textPadding,
-                        Width - (_textPadding * 2),
-                        Height - (_textPadding * 2)
-                    );
+                        // Draw button surface
+                        //g.FillPath(new SolidBrush(_isHovering ? _buttonHoverColor : _buttonColor), pathSurface);
+                        g.FillPath(new SolidBrush(currentBackColor), pathSurface);
 
-                    // Draw content (text and icon)
-                    DrawTextAndIcon(g, contentRect, brushText);
+                        // Draw border
+                        if (_borderSize > 0)
+                            g.DrawPath(penBorder, pathBorder);
+
+                        // Calculate content area
+                        Rectangle contentRect = new Rectangle(
+                            _textPadding,
+                            _textPadding,
+                            Width - (_textPadding * 2),
+                            Height - (_textPadding * 2)
+                        );
+
+                        // Draw content (text and icon)
+                        DrawTextAndIcon(g, contentRect, brushText);
+
+                        if (_underline)
+                        {
+                            // SizeF textSize = g.MeasureString(_buttonText, _buttonFont);
+                            int underlineY;
+
+                            // Determine the Y position for underline based on text position
+                            if (_icon != null && _iconTextLayout == IconTextLayout.Vertical)
+                            {
+                                // If icon is in vertical layout, adjust underline position
+                                underlineY = contentRect.Bottom - _underlineThickness;
+                            }
+                            else
+                            {
+                                // Default vertical center positioning
+                                underlineY = contentRect.Bottom - _underlineThickness / 2;
+                            }
+
+                            var underlineColor = _underlineColor;
+
+                            switch (_buttonType)
+                            {
+                                case ButtonType.Radio:
+                                case ButtonType.Toggle:
+                                default:
+                                    if (_isToggled)
+                                    {
+                                        underlineColor = _toggledUnderlineColor;
+                                    }
+                                    break;
+                            }
+
+                            using (Pen underlinePen = new Pen(underlineColor, _underlineThickness))
+                            {
+                                //int underlineWidth = (int)textSize.Width;
+                                //int underlineX = (Width - underlineWidth) / 2;
+
+                                int underlinePadding = _borderSize;
+                                int underlineX = underlinePadding;
+                                int underlineWidth = Width - (underlinePadding * 2);
+
+                                g.DrawLine(underlinePen,
+                                    underlineX,
+                                    underlineY,
+                                    underlineX + underlineWidth,
+                                    underlineY);
+                            }
+                        }
+                    }
                 }
             }
             catch { }
@@ -530,12 +769,13 @@ namespace CustomControlsLibrary
                 {
                     MouseEnter -= internalHandlerMouseEnter;
                     MouseLeave -= internalHandlerMouseLeave;
+                    Click -= Clicked;
                     _buttonFont?.Dispose();
                     _icon?.Dispose();
                 }
                 _isDispose = true;
             }
-            
+
             base.Dispose(disposing);
         }
         ~CustomButton()
