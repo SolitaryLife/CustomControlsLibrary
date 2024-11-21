@@ -522,9 +522,9 @@ namespace CustomControlsLibrary
                         default:
                             if (_isToggled)
                             {
-                                currentBackColor = _isHovering ? _buttonHoverColor : _buttonColor;
-                                currentBorderColor = _borderColor;
-                                currentTextColor = _textColor;
+                                currentBackColor = _toggledColor;
+                                currentBorderColor = _toggledUnderlineColor;
+                                currentTextColor = _toggledTextColor;
                             }
                             else
                             {
