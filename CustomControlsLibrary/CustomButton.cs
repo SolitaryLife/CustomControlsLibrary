@@ -97,6 +97,10 @@ namespace CustomControlsLibrary
             set
             {
                 _buttonType = value;
+                if (_buttonType == ButtonType.Normal)
+                {
+                    _isToggled = false;
+                }
                 Invalidate();
             }
         }
@@ -108,16 +112,26 @@ namespace CustomControlsLibrary
             get => _isToggled;
             set
             {
-                if (_buttonType == ButtonType.Toggle || _buttonType == ButtonType.Radio)
+                switch (_buttonType)
                 {
-                    _isToggled = value;
-                    Invalidate();
-                    OnToggledChanged(EventArgs.Empty);
-                }
-                else
-                {
-                    _isToggled = false;
-                    Invalidate();
+                    case ButtonType.Toggle:
+                        _isToggled = value;
+
+                        Invalidate();
+                        break;
+                    case ButtonType.Radio:
+                        
+                        _isToggled = value;
+                        if (_isToggled)
+                        {
+                            Parent?.Controls?.OfType<CustomButton>()
+                            ?.Where(w => w != this && w.ButtonTypes == ButtonType.Radio && w.Checked == true)
+                            .ToList()
+                            .ForEach(c => c.Checked = false);
+                        }
+
+                        Invalidate();
+                        break;
                 }
             }
         }
@@ -447,10 +461,11 @@ namespace CustomControlsLibrary
                     if (!Checked)
                     {
                         Checked = true;
+                        
                         Parent?.Controls?.OfType<CustomButton>()
-                       ?.Where(w => w.Name != Name && w.ButtonTypes == ButtonType.Radio)
-                       .ToList()
-                       .ForEach(c => c.Checked = false);
+                            ?.Where(w => w != this  && w.ButtonTypes == ButtonType.Radio && w.Checked == true)
+                            .ToList()
+                            .ForEach(c => c.Checked = false);
                     }
                     break;
             }
@@ -459,12 +474,12 @@ namespace CustomControlsLibrary
         // [Category("Custom Button")]
         // [Description("Occurs when the toggle state changes")]
 
-        private event EventHandler ToggledChanged;
+        //private event EventHandler ToggledChanged;
 
-        protected virtual void OnToggledChanged(EventArgs e)
-        {
-            ToggledChanged?.Invoke(this, e);
-        }
+        //protected virtual void OnToggledChanged(EventArgs e)
+        //{
+        //    ToggledChanged?.Invoke(this, e);
+        //}
 
         private EventHandler internalHandlerMouseEnter;
         private EventHandler internalHandlerMouseLeave;
