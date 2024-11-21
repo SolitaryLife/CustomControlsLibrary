@@ -34,6 +34,7 @@ namespace CustomControlsLibrary
         private Color _textColor = Color.Black;
 
         private Timer animationTimer = new Timer();
+        private bool _enableAnimation = true;
         private int targetValue = 0;
         private const int ANIMATION_STEP = 1;
         private const int ANIMATION_INTERVAL = 10;
@@ -63,6 +64,8 @@ namespace CustomControlsLibrary
             animationTimer.Interval = ANIMATION_INTERVAL;
             animationTimer.Tick += AnimationTimer_Tick;
 
+            EnableAnimation = true;
+
             // _chargingAnimationTimer = new Timer { Interval = 100 };
             // _chargingAnimationTimer.Tick += ChargingAnimationTimer_Tick;
         }
@@ -71,32 +74,35 @@ namespace CustomControlsLibrary
         {
             float step = ANIMATION_STEP;
 
-            switch (_animationType)
+            if (valueChange != targetValue)
             {
-                case AnimationType.Smooth:
-                    step = Math.Max(1, Math.Abs(targetValue - valueChange) / 10f);
-                    break;
-                case AnimationType.Bounce:
-                    step = Math.Max(1, Math.Abs(targetValue - valueChange) / 5f);
-                    if (Math.Abs(targetValue - valueChange) < step * 2)
-                        step = Math.Max(1, step / 2);
-                    break;
+                switch (_animationType)
+                {
+                    case AnimationType.Smooth:
+                        step = Math.Max(1, Math.Abs(targetValue - valueChange) / 10f);
+                        break;
+                    case AnimationType.Bounce:
+                        step = Math.Max(1, Math.Abs(targetValue - valueChange) / 5f);
+                        if (Math.Abs(targetValue - valueChange) < step * 2)
+                            step = Math.Max(1, step / 2);
+                        break;
+                }
+
+                if (valueChange < targetValue)
+                {
+                    valueChange = Math.Min(valueChange + (int)step, targetValue);
+                }
+                else if (valueChange > targetValue)
+                {
+                    valueChange = Math.Max(valueChange - (int)step, targetValue);
+                }
             }
 
-            if (valueChange < targetValue)
-            {
-                valueChange = Math.Min(valueChange + (int)step, targetValue);
-            }
-            else if (valueChange > targetValue)
-            {
-                valueChange = Math.Max(valueChange - (int)step, targetValue);
-            }
-
-            if (valueChange == targetValue)
-            {
-                animationTimer.Stop();
-                OnValueChanged(EventArgs.Empty);
-            }
+            //if (valueChange == targetValue)
+            //{
+            //    animationTimer.Stop();
+            //    //OnValueChanged(EventArgs.Empty);
+            //}
 
             Invalidate();
         }
@@ -246,7 +252,23 @@ namespace CustomControlsLibrary
 
         [Category("Custom Battery")]
         [Description("Enable or disable value change animation")]
-        public bool EnableAnimation { get; set; } = true;
+        [DefaultValue(true)]
+        public bool EnableAnimation
+        {
+            get => _enableAnimation;
+            set
+            {
+                _enableAnimation = value;
+                if (_enableAnimation && !animationTimer.Enabled)
+                {
+                    animationTimer.Start();
+                }
+                else if (!_enableAnimation && animationTimer.Enabled)
+                {
+                    animationTimer.Stop();
+                }
+            }
+        }
 
         [Category("Custom Battery")]
         [Description("The battery charge level (0-100)")]
@@ -261,14 +283,14 @@ namespace CustomControlsLibrary
                     {
                         _value = value;
                         targetValue = Math.Max(0, Math.Min(100, value));
-                        animationTimer.Start();
-                        OnValueChanging(new ValueChangingEventArgs(valueChange, targetValue));
+                        // animationTimer.Start();
+                        // OnValueChanging(new ValueChangingEventArgs(valueChange, targetValue));
                         //OnValueChanging(new ValueChangingEventArgs(_value, targetValue));
                     }
                     else
                     {
                         _value = valueChange = Math.Max(0, Math.Min(100, value));
-                        OnValueChanged(EventArgs.Empty);
+                        // OnValueChanged(EventArgs.Empty);
                         Invalidate();
                     }
                 }
@@ -301,29 +323,29 @@ namespace CustomControlsLibrary
         #endregion
 
         // Custom Event
-        public event EventHandler ValueChanged;
-        public event EventHandler<ValueChangingEventArgs> ValueChanging;
-        protected virtual void OnValueChanged(EventArgs e)
-        {
-            ValueChanged?.Invoke(this, e);
-        }
+        // public event EventHandler ValueChanged;
+        // public event EventHandler<ValueChangingEventArgs> ValueChanging;
+        //protected virtual void OnValueChanged(EventArgs e)
+        //{
+        //    ValueChanged?.Invoke(this, e);
+        //}
 
-        protected virtual void OnValueChanging(ValueChangingEventArgs e)
-        {
-            ValueChanging?.Invoke(this, e);
-        }
+        //protected virtual void OnValueChanging(ValueChangingEventArgs e)
+        //{
+        //    ValueChanging?.Invoke(this, e);
+        //}
 
-        public class ValueChangingEventArgs : EventArgs
-        {
-            public int OldValue { get; }
-            public int NewValue { get; }
+        //public class ValueChangingEventArgs : EventArgs
+        //{
+        //    public int OldValue { get; }
+        //    public int NewValue { get; }
 
-            public ValueChangingEventArgs(int oldValue, int newValue)
-            {
-                OldValue = oldValue;
-                NewValue = newValue;
-            }
-        }
+        //    public ValueChangingEventArgs(int oldValue, int newValue)
+        //    {
+        //        OldValue = oldValue;
+        //        NewValue = newValue;
+        //    }
+        //}
 
         //public event EventHandler ChargingStateChanged;
 
@@ -516,6 +538,7 @@ namespace CustomControlsLibrary
                 {
                     _percentageFont?.Dispose();
                     animationTimer?.Stop();
+                    animationTimer.Tick -= AnimationTimer_Tick;
                     animationTimer?.Dispose();
                     // _chargingAnimationTimer?.Dispose();
                 }
@@ -531,4 +554,3 @@ namespace CustomControlsLibrary
         }
     }
 }
-
