@@ -16,6 +16,7 @@ namespace CustomControlsLibrary
         private BorderRadius _borderRadius = new BorderRadius(0);
         private Color _buttonColor = Color.MediumSlateBlue;
         private Color _buttonHoverColor = Color.LightSkyBlue;
+        private Color _textHoverColor = SystemColors.Control;
         private Color _textColor = Color.White;
         private bool _isHovering = false;
         private bool _underline = false;
@@ -355,6 +356,18 @@ namespace CustomControlsLibrary
         }
 
         [Category("Custom Button")]
+        [Description("Sets the Texts color when the mouse hovers")]
+        public Color TextHoverColor
+        {
+            get => _textHoverColor;
+            set
+            {
+                _textHoverColor = value;
+                Invalidate();
+            }
+        }
+
+        [Category("Custom Button")]
         [Description("Sets the text color")]
         public Color TextColor
         {
@@ -545,7 +558,7 @@ namespace CustomControlsLibrary
                             {
                                 currentBackColor = _isHovering ? _buttonHoverColor : _buttonColor;
                                 currentBorderColor = _borderColor;
-                                currentTextColor = _textColor;
+                                currentTextColor = _isHovering ? _textHoverColor : _textColor;
                             }
                             break;
                     }
