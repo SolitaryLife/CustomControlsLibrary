@@ -16,7 +16,7 @@ namespace CustomControlsLibrary
         private BorderRadius _borderRadius = new BorderRadius(0);
         private Color _buttonColor = Color.MediumSlateBlue;
         private Color _buttonHoverColor = Color.LightSkyBlue;
-        private Color _textHoverColor = SystemColors.Control;
+        private Color _textHoverColor = Color.Black;
         private Color _textColor = Color.White;
         private bool _isHovering = false;
         private bool _underline = false;
