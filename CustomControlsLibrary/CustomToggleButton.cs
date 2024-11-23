@@ -22,6 +22,7 @@ namespace CustomControlsLibrary
         private bool _useAnimation = true;
         private int _animationInterval = 1;
         private Timer animationTimer;
+        private EventHandler _eventTick;
 
         // Events
         [Category("Custom Toggle Actions")]
@@ -206,7 +207,8 @@ namespace CustomControlsLibrary
             // Initialize animation timer
             animationTimer = new Timer();
             animationTimer.Interval = _animationInterval;
-            animationTimer.Tick += AnimationTimer_Tick;
+            _eventTick = AnimationTimer_Tick;
+            animationTimer.Tick += _eventTick;
         }
 
         // Animation timer event handler
@@ -320,6 +322,8 @@ namespace CustomControlsLibrary
             {
                 if (disposing && animationTimer != null)
                 {
+                    if(animationTimer.Enabled) animationTimer?.Stop();
+                    animationTimer.Tick -= _eventTick;
                     animationTimer?.Dispose();
                 }
                 _isDispose = true;

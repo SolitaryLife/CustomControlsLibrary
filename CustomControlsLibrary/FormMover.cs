@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -13,6 +14,7 @@ namespace CustomControlsLibrary
         private const int WM_NCLBUTTONDOWN = 0xA1;
         private const int HT_CAPTION = 0x2;
         private Control _propertieControl = null;
+        private MouseEventHandler _mouseEventArgs;
 
         private List<Control> _controls = new List<Control>();
 
@@ -21,6 +23,11 @@ namespace CustomControlsLibrary
 
         [DllImport("user32.dll")]
         private static extern bool ReleaseCapture();
+
+        CustomFormMover()
+        {
+            _mouseEventArgs = Control_MouseDown;
+        }
 
         [Category("Custom FormMover")]
         [Description("The control that will be used to move the form.")]
@@ -38,13 +45,13 @@ namespace CustomControlsLibrary
                 {
                     if (_controls.Contains(_propertieControl))
                     {
-                        _propertieControl.MouseDown -= Control_MouseDown;
+                        _propertieControl.MouseDown -= _mouseEventArgs;
                         _controls.Remove(_propertieControl);
                     }
 
                     if (!_controls.Contains(_propertieControl))
                     {
-                        _propertieControl.MouseDown += Control_MouseDown;
+                        _propertieControl.MouseDown += _mouseEventArgs;
                         _controls.Add(_propertieControl);
                     }
                 }
@@ -52,7 +59,7 @@ namespace CustomControlsLibrary
                 if (value != null && !_controls.Contains(value))
                 {
 
-                    value.MouseDown += Control_MouseDown;
+                    value.MouseDown += _mouseEventArgs;
                     _propertieControl = value;
                     _controls.Add(value);
                 }
@@ -63,7 +70,7 @@ namespace CustomControlsLibrary
         {
             if (!_controls.Contains(control))
             {
-                control.MouseDown += Control_MouseDown;
+                control.MouseDown += _mouseEventArgs;
                 _controls.Add(control);
             }
         }
@@ -78,6 +85,15 @@ namespace CustomControlsLibrary
                 }
                 if (_targetForm != null)
                 {
+
+                    var customControl = _targetForm?.Controls?.OfType<CustomControlBox>()
+                        ?.Where(w => w.BoxType is CustomControlBox.ControlBoxType.MaximizeBox)
+                            .FirstOrDefault();
+                    if (customControl != null)
+                    {
+                        _targetForm.Size = customControl.OriginalBounds.Size;
+                    }
+
                     ReleaseCapture();
                     SendMessage(_targetForm.Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
                 }
@@ -93,7 +109,7 @@ namespace CustomControlsLibrary
                 {
                     foreach (var control in _controls)
                     {
-                        control.MouseDown -= Control_MouseDown;
+                        control.MouseDown -= _mouseEventArgs;
                     }
                     _controls.Clear();
                     _propertieControl = null;

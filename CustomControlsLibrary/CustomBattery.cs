@@ -38,6 +38,7 @@ namespace CustomControlsLibrary
         private int targetValue = 0;
         private const int ANIMATION_STEP = 1;
         private const int ANIMATION_INTERVAL = 10;
+        private EventHandler _eventTick;
 
         private BatteryShape _batteryShape = BatteryShape.Rectangle;
         private AnimationType _animationType = AnimationType.Linear;
@@ -62,7 +63,8 @@ namespace CustomControlsLibrary
             this.BackColor = Color.Transparent;
 
             animationTimer.Interval = ANIMATION_INTERVAL;
-            animationTimer.Tick += AnimationTimer_Tick;
+            _eventTick = AnimationTimer_Tick;
+            animationTimer.Tick += _eventTick;
 
             EnableAnimation = true;
 
@@ -538,7 +540,7 @@ namespace CustomControlsLibrary
                 {
                     _percentageFont?.Dispose();
                     animationTimer?.Stop();
-                    animationTimer.Tick -= AnimationTimer_Tick;
+                    animationTimer.Tick -= _eventTick;
                     animationTimer?.Dispose();
                     // _chargingAnimationTimer?.Dispose();
                 }

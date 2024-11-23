@@ -27,6 +27,7 @@ namespace CustomControlsLibrary
         private float iconScale = 1.0f;
         private float iconThickness = 1.5f;
         private Form targetForm = null;
+        private event EventHandler CustomMove;
 
         #region Properties
         // Properties
@@ -251,7 +252,7 @@ namespace CustomControlsLibrary
                             {
                                 targetForm = FindForm();
                             }
-                            bool isMaximized = targetForm?.WindowState == FormWindowState.Maximized;
+                            bool isMaximized = _isMaximized;
 
                             if (isMaximized)
                             {
@@ -330,12 +331,48 @@ namespace CustomControlsLibrary
             base.OnMouseLeave(e);
         }
 
+        /// <summary>
+        /// Represents the current state of the window (whether it is maximized or not) 
+        /// and stores the original bounds of the window before it was maximized.
+        /// </summary>
+        private bool _isMaximized = false;
+
+        private Rectangle originalBounds;
+
+        /// <summary>
+        /// Gets the original bounds of the window before it was maximized.
+        /// </summary>
+        public Rectangle OriginalBounds
+        {
+            get { return originalBounds; }
+        }
+
+        private void ParentForm_Move(object sender, EventArgs e)
+        {
+            if (targetForm == null || !_isMaximized) return;
+
+            _isMaximized = false;
+        }
+
+        protected override void OnParentChanged(EventArgs e)
+        {
+            base.OnParentChanged(e);
+            if (boxType == ControlBoxType.MaximizeBox)
+            {
+                if (targetForm == null)
+                {
+                    targetForm = FindForm();
+                }
+                if (targetForm != null)
+                {
+                    targetForm.Move -= CustomMove;
+                    targetForm.Move += CustomMove;
+                }
+            }
+        }
+
         protected override void OnClick(EventArgs e)
         {
-            if (targetForm == null)
-            {
-                targetForm = FindForm();
-            }
             if (targetForm != null)
             {
                 switch (boxType)
@@ -345,10 +382,17 @@ namespace CustomControlsLibrary
                         break;
 
                     case ControlBoxType.MaximizeBox:
-                        if (targetForm.WindowState == FormWindowState.Normal)
-                            targetForm.WindowState = FormWindowState.Maximized;
+                        if (!_isMaximized)
+                        {
+                            originalBounds = targetForm.Bounds;
+                            targetForm.Bounds = Screen.FromControl(targetForm).WorkingArea;
+                            _isMaximized = true;
+                        }
                         else
-                            targetForm.WindowState = FormWindowState.Normal;
+                        {
+                            targetForm.Bounds = originalBounds;
+                            _isMaximized = false;
+                        }
                         break;
 
                     case ControlBoxType.MinimizeBox:
@@ -360,13 +404,21 @@ namespace CustomControlsLibrary
         }
 
         #region Dispose
-
+        private bool _isDispose = false;
         protected override void Dispose(bool disposing)
         {
-            //if (disposing)
-            //{
+            if (!_isDispose)
+            {
+                if (disposing)
+                {
+                    if (targetForm != null)
+                    {
+                        targetForm.Move -= CustomMove;
+                    }
 
-            //}
+                    _isDispose = true;
+                }
+            }
             base.Dispose(disposing);
         }
 

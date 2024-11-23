@@ -21,6 +21,7 @@ namespace CustomControlsLibrary
         private bool _showPercentage = true;
         private int _decimalPlaces = 0;
         private bool _isEnabled = true;
+        private EventHandler _sizeChanged;
 
         public CustomCircularProgressBar()
         {
@@ -35,8 +36,8 @@ namespace CustomControlsLibrary
             _timer.Interval = 30; // Adjust speed here
             _timer.Tick += Timer_Tick;
             _timer.Start();
-
-            SizeChanged += CustomCircularProgressBar_SizeChanged;
+            _sizeChanged = CustomCircularProgressBar_SizeChanged;
+            SizeChanged += _sizeChanged;
         }
 
         #region Properties
@@ -301,7 +302,7 @@ namespace CustomControlsLibrary
                         _timer = null;
                     }
                 }
-                SizeChanged -= CustomCircularProgressBar_SizeChanged;
+                SizeChanged -= _sizeChanged;
 
                 _isDispose = true;
             }
