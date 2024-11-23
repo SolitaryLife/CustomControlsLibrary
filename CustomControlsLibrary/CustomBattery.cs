@@ -217,13 +217,16 @@ namespace CustomControlsLibrary
             get => _charging;
             set
             {
-                _charging = value;
+                if (_charging != value)
+                {
+                    _charging = value;
+                    Invalidate();
+                }
                 //if (_charging)
                 //    _chargingAnimationTimer.Start();
                 //else
                 //    _chargingAnimationTimer.Stop();
                 //OnChargingStateChanged(EventArgs.Empty);
-                Invalidate();
             }
         }
 
