@@ -188,6 +188,8 @@ namespace CustomControlsLibrary
             BackColor = Color.Transparent;
             Cursor = customCursor;
 
+            CustomMove = ParentForm_Move;
+
             DoubleBuffered = true;
         }
 
@@ -331,12 +333,9 @@ namespace CustomControlsLibrary
             base.OnMouseLeave(e);
         }
 
-        /// <summary>
-        /// Represents the current state of the window (whether it is maximized or not) 
-        /// and stores the original bounds of the window before it was maximized.
-        /// </summary>
+        
         private bool _isMaximized = false;
-
+        private bool _isMinimized = false;
         private Rectangle originalBounds;
 
         /// <summary>
@@ -347,26 +346,48 @@ namespace CustomControlsLibrary
             get { return originalBounds; }
         }
 
+        /// <summary>
+        /// Simulates a click on the control, triggering the OnClick event.
+        /// This method is typically used to programmatically invoke a click.
+        /// </summary>
+        public void PerformClick()
+        {
+            OnClick(EventArgs.Empty);
+        }
+
         private void ParentForm_Move(object sender, EventArgs e)
         {
             if (targetForm == null || !_isMaximized) return;
-
-            _isMaximized = false;
+            if (targetForm.WindowState == FormWindowState.Minimized)
+            {
+                _isMinimized = true;
+            }
+            else if (_isMinimized)
+            {
+                _isMinimized = false;
+            }
+            else if (!_isMinimized && targetForm.WindowState == FormWindowState.Normal)
+            {
+                _isMaximized = false;
+                Invalidate();
+            }
         }
 
         protected override void OnParentChanged(EventArgs e)
         {
             base.OnParentChanged(e);
+            if (targetForm == null)
+            {
+                targetForm = FindForm();
+            }
+
             if (boxType == ControlBoxType.MaximizeBox)
             {
-                if (targetForm == null)
-                {
-                    targetForm = FindForm();
-                }
                 if (targetForm != null)
                 {
                     targetForm.Move -= CustomMove;
                     targetForm.Move += CustomMove;
+                    originalBounds = targetForm.Bounds;
                 }
             }
         }
@@ -384,12 +405,15 @@ namespace CustomControlsLibrary
                     case ControlBoxType.MaximizeBox:
                         if (!_isMaximized)
                         {
+                            // Save the original window bounds and maximize
+                            targetForm.WindowState = FormWindowState.Normal;
                             originalBounds = targetForm.Bounds;
                             targetForm.Bounds = Screen.FromControl(targetForm).WorkingArea;
                             _isMaximized = true;
                         }
                         else
                         {
+                            // Restore the original window bounds
                             targetForm.Bounds = originalBounds;
                             _isMaximized = false;
                         }
@@ -400,6 +424,7 @@ namespace CustomControlsLibrary
                         break;
                 }
             }
+            // Ensure the base class's OnClick is still called to propagate the event chain
             base.OnClick(e);
         }
 

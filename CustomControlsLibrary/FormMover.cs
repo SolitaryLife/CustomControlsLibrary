@@ -24,7 +24,7 @@ namespace CustomControlsLibrary
         [DllImport("user32.dll")]
         private static extern bool ReleaseCapture();
 
-        CustomFormMover()
+        public CustomFormMover()
         {
             _mouseEventArgs = Control_MouseDown;
         }
