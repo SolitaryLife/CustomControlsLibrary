@@ -54,6 +54,8 @@ namespace CustomControlsLibrary
             textBox.TabIndex = 0;
             textBox.Enter += new EventHandler(textBox_Enter);
             textBox.Leave += new EventHandler(textBox_Leave);
+            textBox.MouseHover += textBox_MouseHover;
+            textBox.MouseLeave += textBox_MouseLeave;
             internalTextChangedHandler = new EventHandler(InternalTextBox_TextChanged);
             textBox.TextChanged += internalTextChangedHandler;
             //
@@ -527,6 +529,18 @@ namespace CustomControlsLibrary
             }
         }
 
+        private void textBox_MouseHover(object sender, EventArgs e)
+        {
+            _borderColorChange = _borderFocusColor;
+            Invalidate();
+        }
+
+        private void textBox_MouseLeave(object sender, EventArgs e)
+        {
+            _borderColorChange = _borderColor;
+            Invalidate();
+        }
+
         private void InternalTextBox_TextChanged(object sender, EventArgs e)
         {
             if (!_isPlaceholder)
@@ -598,6 +612,8 @@ namespace CustomControlsLibrary
                         textBox.TextChanged -= internalTextChangedHandler;
                         textBox.Enter -= textBox_Enter;
                         textBox.Leave -= textBox_Leave;
+                        textBox.MouseHover -= textBox_MouseHover;
+                        textBox.MouseLeave -= textBox_MouseLeave;
                         pictureBox?.Dispose();
                         textBox?.Dispose();
                     }

@@ -16,7 +16,7 @@ namespace CustomControlsLibrary
         private Color _offBackColor = Color.Gray;
         private Color _offToggleColor = Color.Gainsboro;
         private bool _solidStyle = true;
-        private int _toggleSize = 20;
+        // private int _toggleSize = 20;
         private int _padding = 2;
         private bool _isHovered = false;
         private bool _useAnimation = true;
