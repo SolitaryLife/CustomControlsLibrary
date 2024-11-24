@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace CustomControlsLibrary
 {
-    public partial class CustomButton
+    public class ObjectConverter
     {
         [Serializable]
         [TypeConverter(typeof(BorderRadiusSTypeConverter))]

@@ -4,11 +4,12 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
+using static CustomControlsLibrary.ObjectConverter;
 
 namespace CustomControlsLibrary
 {
     [ToolboxItem(true)]
-    public partial class CustomButton : UserControl
+    public class CustomButton : UserControl
     {
         #region Fields
         private Color _borderColor = Color.MediumSlateBlue;

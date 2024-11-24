@@ -45,9 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClassStructCustomButton.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="ObjectConverter.cs" />
     <Compile Include="CustomBattery.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -58,6 +56,9 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="CustomControlBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CustomPictureBox.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="CustomTextBox.cs">
