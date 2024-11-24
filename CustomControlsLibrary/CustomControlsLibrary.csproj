@@ -66,6 +66,9 @@
     <Compile Include="CustomToggleButton.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="CustomToolTip.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="FormMover.cs">
       <SubType>Component</SubType>
     </Compile>
