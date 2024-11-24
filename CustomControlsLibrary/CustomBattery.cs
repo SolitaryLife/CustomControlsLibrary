@@ -433,7 +433,7 @@ namespace CustomControlsLibrary
                 }
 
                 // Draw battery outline based on shape
-                using (var pen = new Pen(_outlineColor, _borderOutLine))
+                using (var pen = new Pen(_outlineColor, _borderOutLine + 1.5F))
                 {
                     switch (BatteryShapes)
                     {
@@ -444,7 +444,7 @@ namespace CustomControlsLibrary
                             g.DrawPath(pen, GetCapsulePath(0, 0, batteryBody - 1, batteryHeight - 1));
                             break;
                         default:
-                            g.DrawRectangle(pen, 0, 0, batteryBody - 1, batteryHeight - 1);
+                            g.DrawRectangle(pen, 1 , 0.5F, batteryBody - 1, batteryHeight - 1);
                             break;
                     }
 

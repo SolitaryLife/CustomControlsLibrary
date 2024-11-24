@@ -387,7 +387,7 @@ namespace CustomControlsLibrary
                     }
                     else // Normal Rectangle Style
                     {
-                        g.DrawRectangle(penBorder, 0, 0, this.Width - 0.5F, this.Height - 0.5F);
+                        g.DrawRectangle(penBorder, 0.5F, 0.5F, this.Width - 0.5F, this.Height - 0.5F);
                     }
                 }
             }
