@@ -127,6 +127,11 @@ namespace CustomControlsLibrary
         public PixelOffsetMode PixelOffsetMode { get; set; }
 
         [Category("Custom Battery")]
+        [DefaultValue(CompositingQuality.Default)]
+        [Description("Gets or sets the compositing quality level for drawing operations. Compositing quality determines how drawing operations are blended or composited.")]
+        public CompositingQuality CompositingQuality { get; set; }
+
+        [Category("Custom Battery")]
         [Description("The color of the outline for the custom battery.")]
         public Color BorderColor
         {
@@ -377,6 +382,7 @@ namespace CustomControlsLibrary
                 g.SmoothingMode = SmoothingMode;
                 g.InterpolationMode = InterpolationMode;
                 g.PixelOffsetMode = PixelOffsetMode;
+                g.CompositingQuality = CompositingQuality;
 
                 g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 

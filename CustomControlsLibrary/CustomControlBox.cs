@@ -47,6 +47,11 @@ namespace CustomControlsLibrary
         public PixelOffsetMode PixelOffsetMode { get; set; }
 
         [Category("Custom ControlBox")]
+        [DefaultValue(CompositingQuality.Default)]
+        [Description("Gets or sets the compositing quality level for drawing operations. Compositing quality determines how drawing operations are blended or composited.")]
+        public CompositingQuality CompositingQuality { get; set; }
+
+        [Category("Custom ControlBox")]
         [DefaultValue(true)]
         [Description("Enables or disables double buffering to reduce flickering during rendering.")]
         public bool DoubleBuffereds
@@ -208,6 +213,7 @@ namespace CustomControlsLibrary
                 g.SmoothingMode = SmoothingMode;
                 g.InterpolationMode = InterpolationMode;
                 g.PixelOffsetMode = PixelOffsetMode;
+                g.CompositingQuality = CompositingQuality;
 
                 // Draw background
                 using (var brush = new SolidBrush(isHovered ? hoverColor : normalColor))

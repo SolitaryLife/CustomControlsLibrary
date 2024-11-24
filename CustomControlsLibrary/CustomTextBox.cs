@@ -114,6 +114,11 @@ namespace CustomControlsLibrary
         [Description("Sets the pixel offset mode, controlling pixel alignment for improved rendering accuracy.")]
         public PixelOffsetMode PixelOffsetMode { get; set; }
 
+        [Category("Custom TextBox")]
+        [DefaultValue(CompositingQuality.Default)]
+        [Description("Gets or sets the compositing quality level for drawing operations. Compositing quality determines how drawing operations are blended or composited.")]
+        public CompositingQuality CompositingQuality { get; set; }
+
 
         [Category("Custom TextBox")]
         [DefaultValue(true)]
@@ -374,6 +379,7 @@ namespace CustomControlsLibrary
                 g.SmoothingMode = SmoothingMode;
                 g.InterpolationMode = InterpolationMode;
                 g.PixelOffsetMode = PixelOffsetMode;
+                g.CompositingQuality = CompositingQuality;
 
                 using (Pen penBorder = new Pen(_borderColorChange, _borderSize))
                 {

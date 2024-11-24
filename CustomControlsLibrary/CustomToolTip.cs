@@ -39,6 +39,11 @@ namespace CustomControlsLibrary
         public PixelOffsetMode PixelOffsetMode { get; set; }
 
         [Category("Custom ToolTip")]
+        [DefaultValue(CompositingQuality.Default)]
+        [Description("Gets or sets the compositing quality level for drawing operations. Compositing quality determines how drawing operations are blended or composited.")]
+        public CompositingQuality CompositingQuality { get; set; }
+
+        [Category("Custom ToolTip")]
         [Description("Additional description text to show in tooltip")]
         public string Description
         {
@@ -109,66 +114,71 @@ namespace CustomControlsLibrary
 
         private void OnDraw(object sender, DrawToolTipEventArgs e)
         {
-            string text = tooltipTexts.ContainsKey(e.AssociatedControl)
+            try
+            {
+                string text = tooltipTexts.ContainsKey(e.AssociatedControl)
             ? tooltipTexts[e.AssociatedControl]
             : "";
 
-            e.Graphics.SmoothingMode = SmoothingMode;
-            e.Graphics.InterpolationMode = InterpolationMode;
-            e.Graphics.PixelOffsetMode = PixelOffsetMode;
+                e.Graphics.SmoothingMode = SmoothingMode;
+                e.Graphics.InterpolationMode = InterpolationMode;
+                e.Graphics.PixelOffsetMode = PixelOffsetMode;
+                e.Graphics.CompositingQuality = CompositingQuality;
 
-            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            // Draw a background with a gradient for beauty.
-            using (LinearGradientBrush brush =
-                new LinearGradientBrush(
-                    e.Bounds,
-                    backgroundColor,
-                    Color.FromArgb(Math.Max(0, backgroundColor.R - 20),
-                                 Math.Max(0, backgroundColor.G - 20),
-                                 Math.Max(0, backgroundColor.B - 20)),
-                    LinearGradientMode.Vertical))
-            {
-                e.Graphics.FillRectangle(brush, e.Bounds);
-            }
-
-            // Draw edges with high contrast.
-            using (Pen borderPen = new Pen(Color.FromArgb(128, Color.Gray), 1))
-            {
-                Rectangle borderRect = new Rectangle(
-                    e.Bounds.X,
-                    e.Bounds.Y,
-                    e.Bounds.Width - 1,
-                    e.Bounds.Height - 1
-                );
-                e.Graphics.DrawRectangle(borderPen, borderRect);
-            }
-
-            // Calculate the area for displaying text.
-            Rectangle titleRect = new Rectangle(
-                e.Bounds.X + 5,
-                e.Bounds.Y + 5,
-                e.Bounds.Width - 10,
-                (int)e.Graphics.MeasureString(text, tooltipFont).Height
-            );
-
-            // Draw main text
-            using (SolidBrush textBrush = new SolidBrush(textColor))
-            {
-                e.Graphics.DrawString(text, tooltipFont, textBrush, titleRect);
-
-                // Draw a description if available.
-                if (!string.IsNullOrEmpty(description))
+                // Draw a background with a gradient for beauty.
+                using (LinearGradientBrush brush =
+                    new LinearGradientBrush(
+                        e.Bounds,
+                        backgroundColor,
+                        Color.FromArgb(Math.Max(0, backgroundColor.R - 20),
+                                     Math.Max(0, backgroundColor.G - 20),
+                                     Math.Max(0, backgroundColor.B - 20)),
+                        LinearGradientMode.Vertical))
                 {
-                    Rectangle descRect = new Rectangle(
-                        e.Bounds.X + 5,
-                        titleRect.Bottom + 3,
-                        e.Bounds.Width - 10,
-                        e.Bounds.Height - titleRect.Height - 8
+                    e.Graphics.FillRectangle(brush, e.Bounds);
+                }
+
+                // Draw edges with high contrast.
+                using (Pen borderPen = new Pen(Color.FromArgb(128, Color.Gray), 1))
+                {
+                    Rectangle borderRect = new Rectangle(
+                        e.Bounds.X,
+                        e.Bounds.Y,
+                        e.Bounds.Width - 1,
+                        e.Bounds.Height - 1
                     );
-                    e.Graphics.DrawString(description, tooltipFont, textBrush, descRect);
+                    e.Graphics.DrawRectangle(borderPen, borderRect);
+                }
+
+                // Calculate the area for displaying text.
+                Rectangle titleRect = new Rectangle(
+                    e.Bounds.X + 5,
+                    e.Bounds.Y + 5,
+                    e.Bounds.Width - 10,
+                    (int)e.Graphics.MeasureString(text, tooltipFont).Height
+                );
+
+                // Draw main text
+                using (SolidBrush textBrush = new SolidBrush(textColor))
+                {
+                    e.Graphics.DrawString(text, tooltipFont, textBrush, titleRect);
+
+                    // Draw a description if available.
+                    if (!string.IsNullOrEmpty(description))
+                    {
+                        Rectangle descRect = new Rectangle(
+                            e.Bounds.X + 5,
+                            titleRect.Bottom + 3,
+                            e.Bounds.Width - 10,
+                            e.Bounds.Height - titleRect.Height - 8
+                        );
+                        e.Graphics.DrawString(description, tooltipFont, textBrush, descRect);
+                    }
                 }
             }
+            catch { }
         }
 
         #region Dispose
