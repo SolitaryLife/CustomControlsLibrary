@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -17,6 +18,9 @@ namespace CustomControlsLibrary
         private MouseEventHandler _mouseEventArgs;
 
         private List<Control> _controls = new List<Control>();
+
+        private CustomControlBox _customControl = null;
+
 
         [DllImport("user32.dll")]
         private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
@@ -74,7 +78,6 @@ namespace CustomControlsLibrary
                 _controls.Add(control);
             }
         }
-
         private void Control_MouseDown(object sender, MouseEventArgs e)
         {
             if (sender is Control control && e.Button == MouseButtons.Left)
@@ -86,12 +89,67 @@ namespace CustomControlsLibrary
                 if (_targetForm != null)
                 {
 
-                    var customControl = _targetForm?.Controls?.OfType<CustomControlBox>()
-                        ?.Where(w => w.BoxType is CustomControlBox.ControlBoxType.MaximizeBox)
-                            .FirstOrDefault();
-                    if (customControl != null)
+                    if (_customControl == null || _customControl.IsDisposed)
                     {
-                        _targetForm.Size = customControl.OriginalBounds.Size;
+                        #region Queue
+                        //var queue = new Queue<Control>(_targetForm.Controls.Cast<Control>());
+                        //while (queue.Count > 0)
+                        //{
+                        //    // Remove Control from Queue
+                        //    var qControl = queue.Dequeue();
+
+                        //    // Verify that the Control is CustomControlBox and has the required BoxType.
+                        //    if (qControl is CustomControlBox2 customControl &&
+                        //        customControl.BoxType == CustomControlBox2.ControlBoxType.MaximizeBox)
+                        //    {
+                        //        _customControl = customControl;
+                        //        break;
+                        //    }
+
+                        //    // Add all Child Controls to the Queue.
+                        //    foreach (Control child in qControl.Controls)
+                        //    {
+                        //        queue.Enqueue(child);
+                        //    }
+                        //}
+
+                        //queue.Clear();
+                        #endregion
+
+                        #region Stack
+                        var stack = new Stack<Control>(_targetForm.Controls.Cast<Control>());
+
+                        while (stack.Count > 0)
+                        {
+                            // Remove Control from Stack
+                            var qControl = stack.Pop();
+
+                            // Verify that the Control is CustomControlBox and has the required BoxType.
+                            if (qControl is CustomControlBox customControl &&
+                                customControl.BoxType == CustomControlBox.ControlBoxType.MaximizeBox)
+                            {
+                                _customControl = customControl;
+                                break;
+                            }
+
+                            // Add all Child Controls to the Stack.
+                            foreach (Control child in qControl.Controls)
+                            {
+                                stack.Push(child);
+                            }
+                        }
+                        stack.Clear();
+
+                        #endregion
+                    }
+
+                    if (_customControl != null && !_customControl.IsDisposed)
+                    {
+                        var valueSize = _customControl.OriginalBounds?.Size;
+                        if (valueSize != null)
+                        {
+                            _targetForm.Size = (Size)valueSize;
+                        }
                     }
 
                     ReleaseCapture();
@@ -100,6 +158,8 @@ namespace CustomControlsLibrary
             }
         }
 
+
+        #region Dispose
         private bool _isDispose = false;
         protected override void Dispose(bool disposing)
         {
@@ -114,10 +174,11 @@ namespace CustomControlsLibrary
                     _controls.Clear();
                     _propertieControl = null;
                     _targetForm = null;
+                    _customControl = null;
                 }
                 _isDispose = true;
             }
-            
+
 
             base.Dispose(disposing);
         }
@@ -126,5 +187,7 @@ namespace CustomControlsLibrary
         {
             Dispose(true);
         }
+
+        #endregion
     }
 }

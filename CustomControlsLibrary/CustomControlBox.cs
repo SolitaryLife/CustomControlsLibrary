@@ -163,6 +163,7 @@ namespace CustomControlsLibrary
             set
             {
                 boxType = value;
+                AddEventinForm();
                 Invalidate();
             }
         }
@@ -194,6 +195,7 @@ namespace CustomControlsLibrary
             Cursor = customCursor;
 
             CustomMove = ParentForm_Move;
+
 
             DoubleBuffered = true;
         }
@@ -339,15 +341,15 @@ namespace CustomControlsLibrary
             base.OnMouseLeave(e);
         }
 
-        
+
         private bool _isMaximized = false;
         private bool _isMinimized = false;
-        private Rectangle originalBounds;
+        private Rectangle? originalBounds;
 
         /// <summary>
         /// Gets the original bounds of the window before it was maximized.
         /// </summary>
-        public Rectangle OriginalBounds
+        public Rectangle? OriginalBounds
         {
             get { return originalBounds; }
         }
@@ -360,6 +362,37 @@ namespace CustomControlsLibrary
         {
             OnClick(EventArgs.Empty);
         }
+
+        private void AddEventinForm()
+        {
+            if (targetForm == null)
+            {
+                targetForm = FindForm();
+            }
+
+            switch (boxType)
+            {
+                case ControlBoxType.MaximizeBox:
+                    if (targetForm != null)
+                    {
+                        targetForm.Move -= CustomMove;
+                        targetForm.Move += CustomMove;
+                        if (originalBounds == null)
+                        {
+                            originalBounds = targetForm.Bounds;
+                        }
+                    }
+                    break;
+                default:
+                    if (targetForm != null)
+                    {
+                        targetForm.Move -= CustomMove;
+                        _isMaximized = false;
+                    }
+                    break;
+            }
+        }
+
 
         private void ParentForm_Move(object sender, EventArgs e)
         {
@@ -382,24 +415,12 @@ namespace CustomControlsLibrary
         protected override void OnParentChanged(EventArgs e)
         {
             base.OnParentChanged(e);
-            if (targetForm == null)
-            {
-                targetForm = FindForm();
-            }
-
-            if (boxType == ControlBoxType.MaximizeBox)
-            {
-                if (targetForm != null)
-                {
-                    targetForm.Move -= CustomMove;
-                    targetForm.Move += CustomMove;
-                    originalBounds = targetForm.Bounds;
-                }
-            }
+            AddEventinForm();
         }
 
         protected override void OnClick(EventArgs e)
         {
+            AddEventinForm();
             if (targetForm != null)
             {
                 switch (boxType)
@@ -420,7 +441,7 @@ namespace CustomControlsLibrary
                         else
                         {
                             // Restore the original window bounds
-                            targetForm.Bounds = originalBounds;
+                            targetForm.Bounds = (Rectangle)originalBounds;
                             _isMaximized = false;
                         }
                         break;

@@ -13,6 +13,7 @@ namespace CustomControlsLibrary
     {
         #region Fields
         private Color _borderColor = Color.MediumSlateBlue;
+        private Color _borderHover = Color.Transparent;
         private int _borderSize = 2;
         private BorderRadius _borderRadius = new BorderRadius(0);
         private Color _buttonColor = Color.MediumSlateBlue;
@@ -28,7 +29,7 @@ namespace CustomControlsLibrary
         private bool _isToggled = false;
         private Color _toggledColor = Color.DarkSlateBlue;
         private Color _toggledTextColor = Color.White;
-        private Color _toggledUnderlineColor = Color.DarkSlateBlue;
+        private Color _toggledBorderColor = Color.DarkSlateBlue;
 
         private bool _autoEllipsis = false;
         private bool _multiline = false;
@@ -124,6 +125,7 @@ namespace CustomControlsLibrary
                     case ButtonType.Toggle:
                         _isToggled = value;
 
+                        CheckedValueChanged?.Invoke(this, _isToggled);
                         Invalidate();
                         break;
                     case ButtonType.Radio:
@@ -137,6 +139,7 @@ namespace CustomControlsLibrary
                             .ForEach(c => c.Checked = false);
                         }
 
+                        CheckedValueChanged?.Invoke(this, _isToggled);
                         Invalidate();
                         break;
                 }
@@ -169,12 +172,12 @@ namespace CustomControlsLibrary
 
         [Category("Custom Button")]
         [Description("Sets the border color when button is toggled")]
-        public Color ToggledUnderlineColor
+        public Color ToggledBorderColor
         {
-            get => _toggledUnderlineColor;
+            get => _toggledBorderColor;
             set
             {
-                _toggledUnderlineColor = value;
+                _toggledBorderColor = value;
                 Invalidate();
             }
         }
@@ -192,17 +195,17 @@ namespace CustomControlsLibrary
             }
         }
 
-        [Category("Custom Button")]
-        [Description("Sets the color of the underline")]
-        public Color UnderlineColor
-        {
-            get => _underlineColor;
-            set
-            {
-                _underlineColor = value;
-                Invalidate();
-            }
-        }
+        //[Category("Custom Button")]
+        //[Description("Sets the color of the underline")]
+        //public Color UnderlineColor
+        //{
+        //    get => _underlineColor;
+        //    set
+        //    {
+        //        _underlineColor = value;
+        //        Invalidate();
+        //    }
+        //}
 
         [Category("Custom Button")]
         [Description("Sets the thickness of the underline")]
@@ -312,6 +315,23 @@ namespace CustomControlsLibrary
             }
         }
 
+
+        /// <summary>
+        /// Gets or sets the border color of the button when the mouse hovers over it.
+        /// Changing this property invalidates the control to trigger a repaint.
+        /// </summary>
+        [Category("Custom Button")]
+        [Description("Specifies the border color of the button when the mouse hovers over it.")]
+        public Color BorderHover
+        {
+            get => _borderHover;
+            set
+            {
+                _borderHover = value;
+                Invalidate();
+            }
+        }
+
         [Category("Custom Button")]
         [Description("Sets the border thickness")]
         public int BorderSize
@@ -385,17 +405,35 @@ namespace CustomControlsLibrary
             }
         }
 
-        [Category("Custom Button")]
+        // [Category("Custom Button")]
         [Description("Sets the text displayed on the button")]
-        public string Texts
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
+        public override string Text
         {
-            get => _buttonText;
+            get => base.Text;
             set
             {
                 _buttonText = value;
+                base.Text = value;
                 Invalidate();
             }
         }
+
+        /// <summary>
+        /// Indicates whether the control is enabled.
+        /// </summary>
+        [Description("Indicates whether the control is enabled in the designer.")]
+        public new bool Enabled 
+        {
+            get => base.Enabled;
+            set
+            {
+                base.Enabled = value;
+                Invalidate();
+            }
+        }
+
 
         [Category("Custom Button")]
         [Description("Sets the alignment of the text")]
@@ -500,6 +538,11 @@ namespace CustomControlsLibrary
         //    ToggledChanged?.Invoke(this, e);
         //}
 
+        /// <summary>
+        /// Occurs when the checked value changes.
+        /// </summary>
+        public event EventHandler<bool> CheckedValueChanged;
+
         private EventHandler internalHandlerMouseEnter;
         private EventHandler internalHandlerMouseLeave;
 
@@ -550,25 +593,35 @@ namespace CustomControlsLibrary
                     Color currentBorderColor;
                     Color currentTextColor;
 
-                    switch (_buttonType)
+                    if (!Enabled)
                     {
-                        case ButtonType.Radio:
-                        case ButtonType.Toggle:
-                        default:
-                            if (_isToggled)
-                            {
-                                currentBackColor = _toggledColor;
-                                currentBorderColor = _toggledUnderlineColor;
-                                currentTextColor = _toggledTextColor;
-                            }
-                            else
-                            {
-                                currentBackColor = _isHovering ? _buttonHoverColor : _buttonColor;
-                                currentBorderColor = _borderColor;
-                                currentTextColor = _isHovering ? _textHoverColor : _textColor;
-                            }
-                            break;
+                        currentBackColor = Color.FromArgb(169, 169, 169);
+                        currentBorderColor = Color.FromArgb(169, 169, 169);
+                        currentTextColor = Color.FromArgb(141, 141, 141);
                     }
+                    else
+                    {
+                        switch (_buttonType)
+                        {
+                            case ButtonType.Radio:
+                            case ButtonType.Toggle:
+                            default:
+                                if (_isToggled)
+                                {
+                                    currentBackColor = _toggledColor;
+                                    currentBorderColor = _toggledBorderColor;
+                                    currentTextColor = _toggledTextColor;
+                                }
+                                else
+                                {
+                                    currentBackColor = _isHovering ? _buttonHoverColor : _buttonColor;
+                                    currentBorderColor = _isHovering? _borderHover : _borderColor;
+                                    currentTextColor = _isHovering ? _textHoverColor : _textColor;
+                                }
+                                break;
+                        }
+                    }
+                    
 
                     using (Pen penSurface = new Pen(Parent.BackColor, smoothSize))
                     using (Pen penBorder = new Pen(!_underline ? currentBorderColor : Color.Transparent, _borderSize))
@@ -618,19 +671,24 @@ namespace CustomControlsLibrary
                                 underlineY = contentRect.Bottom - _underlineThickness / 2;
                             }
 
-                            var underlineColor = _underlineColor;
+                            // var underlineColor = _underlineColor;
+                            var underlineColor = currentBorderColor;
 
-                            switch (_buttonType)
-                            {
-                                case ButtonType.Radio:
-                                case ButtonType.Toggle:
-                                default:
-                                    if (_isToggled)
-                                    {
-                                        underlineColor = _toggledUnderlineColor;
-                                    }
-                                    break;
-                            }
+                            //switch (_buttonType)
+                            //{
+                            //    case ButtonType.Radio:
+                            //    case ButtonType.Toggle:
+                            //    default:
+                            //        if (_isToggled)
+                            //        {
+                            //            underlineColor = _toggledUnderlineColor;
+                            //        }
+                            //        else
+                            //        {
+
+                            //        }
+                            //        break;
+                            //}
 
                             using (Pen underlinePen = new Pen(underlineColor, _underlineThickness))
                             {

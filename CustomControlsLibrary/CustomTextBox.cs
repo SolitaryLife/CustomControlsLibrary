@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Text;
 using System.Windows.Forms;
 
 namespace CustomControlsLibrary
@@ -14,6 +15,11 @@ namespace CustomControlsLibrary
         private Color _borderColor = Color.MediumSlateBlue;
         private Color _borderFocusColor = Color.HotPink;
         private Color _borderColorChange = Color.Transparent;
+        private Color _backColor;
+        private Color _foreColor;
+        private Color _disableBackColor = Color.FromArgb(240, 240, 240);
+        private Color _disableForeColor = Color.FromArgb(109, 109, 109);
+        private Color _disableBorderColor = Color.FromArgb(169, 169, 169);
         private int _borderSize = 2;
         private bool _underlinedStyle = false;
         private Color _placeholderColor = Color.DarkGray;
@@ -71,10 +77,12 @@ namespace CustomControlsLibrary
             // 
             AutoScaleMode = AutoScaleMode.None;
             BackColor = SystemColors.Window;
+            _backColor = BackColor;
             Controls.Add(this.textBox);
             Controls.Add(pictureBox);
             Font = new Font("Microsoft Sans Serif", 9.5F);
             ForeColor = Color.DimGray;
+            _foreColor = ForeColor;
             Margin = new Padding(4);
             Name = "CustomTextBox";
             Padding = new Padding(7);
@@ -286,8 +294,17 @@ namespace CustomControlsLibrary
             get => base.BackColor;
             set
             {
-                base.BackColor = value;
-                textBox.BackColor = value;
+                if (Enabled)
+                {
+                    _backColor = value;
+                    base.BackColor = value;
+                    textBox.BackColor = value;
+                }
+                else
+                {
+                    base.BackColor = _disableBorderColor;
+                    textBox.BackColor = _disableBorderColor;
+                }
             }
         }
 
@@ -298,8 +315,17 @@ namespace CustomControlsLibrary
             get => base.ForeColor;
             set
             {
-                base.ForeColor = value;
-                textBox.ForeColor = value;
+                if (Enabled)
+                {
+                    _foreColor = value;
+                    base.ForeColor = value;
+                    textBox.ForeColor = value;
+                }
+                else
+                {
+                    base.ForeColor = _disableForeColor;
+                    textBox.ForeColor = _disableForeColor;
+                }
             }
         }
 
@@ -317,9 +343,11 @@ namespace CustomControlsLibrary
             }
         }
 
-        [Category("Custom TextBox")]
+        // [Category("Custom TextBox")]
         [Description("Gets or sets the text associated with the control.")]
-        public string Texts
+        [Browsable(true)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
+        public override string Text
         {
             get
             {
@@ -329,6 +357,7 @@ namespace CustomControlsLibrary
             {
 
                 _textValue = value;
+                base.Text = _textValue;
                 if (!string.IsNullOrEmpty(_textValue))
                 {
                     RemovePlaceholder();
@@ -369,6 +398,23 @@ namespace CustomControlsLibrary
 
         #region Override Methods
         // Override Methods
+
+        protected override void OnEnabledChanged(EventArgs e)
+        {
+            base.OnEnabledChanged(e);
+            if (!Enabled)
+            {
+                // Disable state
+                base.BackColor = _disableBackColor;
+                base.ForeColor = _disableForeColor;
+            }
+            else
+            {
+                // Restore to default colors when enabled
+                base.BackColor = _backColor;
+                base.ForeColor = _foreColor;
+            }
+        }
         protected override void OnPaint(PaintEventArgs e)
         {
             if (Width <= 0 || Height <= 0) return;
@@ -381,7 +427,7 @@ namespace CustomControlsLibrary
                 g.PixelOffsetMode = PixelOffsetMode;
                 g.CompositingQuality = CompositingQuality;
 
-                using (Pen penBorder = new Pen(_borderColorChange, _borderSize))
+                using (Pen penBorder = new Pen(Enabled ? _borderColorChange : _disableBorderColor, _borderSize))
                 {
                     penBorder.StartCap = LineCap.Round;
                     penBorder.EndCap = LineCap.Round;
@@ -399,6 +445,7 @@ namespace CustomControlsLibrary
             }
             catch { }
         }
+
 
         protected override void OnResize(EventArgs e)
         {
