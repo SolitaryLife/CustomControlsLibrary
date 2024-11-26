@@ -407,6 +407,7 @@ namespace CustomControlsLibrary
 
         // [Category("Custom Button")]
         [Description("Sets the text displayed on the button")]
+        [DefaultValue("Button")]
         [Browsable(true)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public override string Text
