@@ -116,7 +116,17 @@ namespace CustomControlsLibrary
             switch (_sizeMode)
             {
                 case PictureBoxSizeMode.Normal:
-                    rect.Size = imageSize;
+                    float scale = Math.Min(
+                        (float)rect.Width / imageSize.Width,
+                        (float)rect.Height / imageSize.Height
+                    );
+                    int newWidth = (int)(imageSize.Width * scale);
+                    int newHeight = (int)(imageSize.Height * scale);
+
+                    rect.X = (rect.Width - newWidth) / 2;
+                    rect.Y = (rect.Height - newHeight) / 2;
+                    rect.Width = newWidth;
+                    rect.Height = newHeight;
                     break;
                 case PictureBoxSizeMode.StretchImage:
                     // Use full size control
@@ -125,18 +135,31 @@ namespace CustomControlsLibrary
                     this.Size = imageSize;
                     break;
                 case PictureBoxSizeMode.CenterImage:
-                    rect.X = (Width - imageSize.Width) / 2;
-                    rect.Y = (Height - imageSize.Height) / 2;
-                    rect.Size = imageSize;
-                    break;
-                case PictureBoxSizeMode.Zoom:
-                    float ratio = Math.Min((float)Width / imageSize.Width, (float)Height / imageSize.Height);
-                    int newWidth = (int)(imageSize.Width * ratio);
-                    int newHeight = (int)(imageSize.Height * ratio);
-                    rect.X = (Width - newWidth) / 2;
-                    rect.Y = (Height - newHeight) / 2;
+                    float centerScale = Math.Min(
+                        (float)rect.Width / imageSize.Width,
+                        (float)rect.Height / imageSize.Height
+                    );
+                    newWidth = (int)(imageSize.Width * centerScale);
+                    newHeight = (int)(imageSize.Height * centerScale);
+
+                    rect.X = (rect.Width - newWidth) / 2;
+                    rect.Y = (rect.Height - newHeight) / 2;
                     rect.Width = newWidth;
                     rect.Height = newHeight;
+                    break;
+                case PictureBoxSizeMode.Zoom:
+                    float zoomScale = Math.Min(
+                        (float)rect.Width / imageSize.Width,
+                        (float)rect.Height / imageSize.Height
+                    );
+                    newWidth = (int)(imageSize.Width * zoomScale);
+                    newHeight = (int)(imageSize.Height * zoomScale);
+
+                    rect.X = (rect.Width - newWidth) / 2;
+                    rect.Y = (rect.Height - newHeight) / 2;
+                    rect.Width = newWidth;
+                    rect.Height = newHeight;
+
                     break;
             }
 
@@ -237,16 +260,17 @@ namespace CustomControlsLibrary
                         if (_image != null)
                         {
                             // Create a TextureBrush from an image
-                            using (TextureBrush brush = new TextureBrush(_image))
+                            using (TextureBrush brush = new TextureBrush(_image, WrapMode.Clamp))
                             {
                                 // Adjust the size and position of the brush according to SizeMode.
                                 Rectangle imageRect = GetImageRectangle();
-                                brush.TranslateTransform(imageRect.X, imageRect.Y);
 
                                 // Scale image to fit the rectangle
-                                float scaleX = (float)imageRect.Width / _image.Width;
-                                float scaleY = (float)imageRect.Height / _image.Height;
-                                brush.ScaleTransform(scaleX, scaleY);
+                                Matrix transform = new Matrix();
+                                transform.Translate(imageRect.X, imageRect.Y);
+                                transform.Scale((float)imageRect.Width / _image.Width,
+                                                (float)imageRect.Height / _image.Height);
+                                brush.Transform = transform;
 
                                 // Fill the path with the texture brush (image)
                                 g.FillPath(brush, path);
