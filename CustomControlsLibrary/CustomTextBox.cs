@@ -302,8 +302,8 @@ namespace CustomControlsLibrary
                 }
                 else
                 {
-                    base.BackColor = _disableBorderColor;
-                    textBox.BackColor = _disableBorderColor;
+                    base.BackColor = _disableBackColor;
+                    textBox.BackColor = _disableBackColor;
                 }
             }
         }
@@ -406,13 +406,17 @@ namespace CustomControlsLibrary
             {
                 // Disable state
                 base.BackColor = _disableBackColor;
+                textBox.BackColor = _disableBackColor;
                 base.ForeColor = _disableForeColor;
+                textBox.ForeColor = _disableForeColor;
             }
             else
             {
                 // Restore to default colors when enabled
                 base.BackColor = _backColor;
+                textBox.BackColor = _backColor;
                 base.ForeColor = _foreColor;
+                textBox.ForeColor = _foreColor;
             }
         }
         protected override void OnPaint(PaintEventArgs e)
