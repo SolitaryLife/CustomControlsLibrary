@@ -740,6 +740,7 @@ namespace CustomControlsLibrary
                 // Calculate sizes and positions
 
                 string empty = _icon == null ? "" : "_";
+                empty = string.IsNullOrEmpty(_buttonText) ? string.Empty : "_";
                 SizeF textSize = g.MeasureString(_buttonText + empty, _buttonFont);
                 Rectangle textRect = contentRect;
                 Rectangle iconRect = Rectangle.Empty;
