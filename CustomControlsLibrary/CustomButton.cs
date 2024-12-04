@@ -123,6 +123,9 @@ namespace CustomControlsLibrary
                 switch (_buttonType)
                 {
                     case ButtonType.Toggle:
+
+                        if (_isToggled == value) return;
+
                         _isToggled = value;
 
                         CheckedValueChanged?.Invoke(this, _isToggled);
@@ -130,11 +133,8 @@ namespace CustomControlsLibrary
                         break;
                     case ButtonType.Radio:
 
-                        if (_isToggled == value)
-                        {
-                            return;
-                        }
-
+                        if (_isToggled == value) return;
+                       
                         _isToggled = value;
 
                         if (_isToggled)
@@ -200,18 +200,6 @@ namespace CustomControlsLibrary
                 Invalidate();
             }
         }
-
-        //[Category("Custom Button")]
-        //[Description("Sets the color of the underline")]
-        //public Color UnderlineColor
-        //{
-        //    get => _underlineColor;
-        //    set
-        //    {
-        //        _underlineColor = value;
-        //        Invalidate();
-        //    }
-        //}
 
         [Category("Custom Button")]
         [Description("Sets the thickness of the underline")]
@@ -535,19 +523,11 @@ namespace CustomControlsLibrary
             }
         }
 
-        // [Category("Custom Button")]
-        // [Description("Occurs when the toggle state changes")]
-
-        //private event EventHandler ToggledChanged;
-
-        //protected virtual void OnToggledChanged(EventArgs e)
-        //{
-        //    ToggledChanged?.Invoke(this, e);
-        //}
-
         /// <summary>
         /// Occurs when the checked value changes.
         /// </summary>
+        [Category("Custom Button")]
+        [Description("Occurs when the checked value is changed.")]
         public event EventHandler<bool> CheckedValueChanged;
 
         private EventHandler internalHandlerMouseEnter;
@@ -579,8 +559,8 @@ namespace CustomControlsLibrary
 
                 g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-                Rectangle rectSurface = ClientRectangle;
-                Rectangle rectBorder = Rectangle.Inflate(rectSurface, -_borderSize, -_borderSize);
+                RectangleF rectSurface = ClientRectangle;
+                RectangleF rectBorder = RectangleF.Inflate(rectSurface, -_borderSize, -_borderSize);
                 int smoothSize = _borderSize > 0 ? _borderSize : 1;
 
                 using (GraphicsPath pathSurface = GetFigurePath(rectSurface,
@@ -643,7 +623,6 @@ namespace CustomControlsLibrary
                         penBorder.LineJoin = LineJoin.Round;
 
                         // Draw button surface
-                        //g.FillPath(new SolidBrush(_isHovering ? _buttonHoverColor : _buttonColor), pathSurface);
                         g.FillPath(new SolidBrush(currentBackColor), pathSurface);
 
                         // Draw border
@@ -651,11 +630,13 @@ namespace CustomControlsLibrary
                             g.DrawPath(penBorder, pathBorder);
 
                         // Calculate content area
-                        Rectangle contentRect = new Rectangle(
-                            _textPadding,
-                            _textPadding,
-                            Width - (_textPadding * 2),
-                            Height - (_textPadding * 2)
+                        var startArea = _underline ? _textPadding : 5;
+                        RectangleF contentRect = new RectangleF
+                        (
+                            startArea,
+                            Height / 16,
+                            Width - (startArea * 2),
+                            Height - (startArea * 2)
                         );
 
                         // Draw content (text and icon)
@@ -663,8 +644,7 @@ namespace CustomControlsLibrary
 
                         if (_underline)
                         {
-                            // SizeF textSize = g.MeasureString(_buttonText, _buttonFont);
-                            int underlineY;
+                            float underlineY;
 
                             // Determine the Y position for underline based on text position
                             if (_icon != null && _iconTextLayout == IconTextLayout.Vertical)
@@ -681,30 +661,11 @@ namespace CustomControlsLibrary
                             // var underlineColor = _underlineColor;
                             var underlineColor = currentBorderColor;
 
-                            //switch (_buttonType)
-                            //{
-                            //    case ButtonType.Radio:
-                            //    case ButtonType.Toggle:
-                            //    default:
-                            //        if (_isToggled)
-                            //        {
-                            //            underlineColor = _toggledUnderlineColor;
-                            //        }
-                            //        else
-                            //        {
-
-                            //        }
-                            //        break;
-                            //}
-
                             using (Pen underlinePen = new Pen(underlineColor, _underlineThickness))
                             {
-                                //int underlineWidth = (int)textSize.Width;
-                                //int underlineX = (Width - underlineWidth) / 2;
-
-                                int underlinePadding = _borderSize;
-                                int underlineX = underlinePadding;
-                                int underlineWidth = Width - (underlinePadding * 2);
+                                float underlinePadding = _borderSize;
+                                float underlineX = underlinePadding;
+                                float underlineWidth = Width - (underlinePadding * 2);
 
                                 g.DrawLine(underlinePen,
                                     underlineX,
@@ -721,7 +682,7 @@ namespace CustomControlsLibrary
         #endregion
 
         #region Draw Text And Icon
-        private void DrawTextAndIcon(Graphics g, Rectangle contentRect, Brush textBrush)
+        private void DrawTextAndIcon(Graphics g, RectangleF contentRect, Brush textBrush)
         {
             // Prepare text format
             using (StringFormat sf = new StringFormat())
@@ -748,12 +709,12 @@ namespace CustomControlsLibrary
                 string empty = _icon == null ? "" : "_";
                 empty = string.IsNullOrEmpty(_buttonText) ? string.Empty : "_";
                 SizeF textSize = g.MeasureString(_buttonText + empty, _buttonFont);
-                Rectangle textRect = contentRect;
-                Rectangle iconRect = Rectangle.Empty;
+                RectangleF textRect = contentRect;
+                RectangleF iconRect = RectangleF.Empty;
 
                 if (_icon != null)
                 {
-                    // Adjust rectangles based on layout
+                    // Adjust RectangleFs based on layout
                     if (_iconTextLayout == IconTextLayout.Horizontal)
                     {
                         int totalWidth = (int)textSize.Width + _iconSpacing + _iconSize.Width;
@@ -761,13 +722,13 @@ namespace CustomControlsLibrary
 
                         if (_iconTextAlignment == IconTextAlignment.IconBeforeText)
                         {
-                            iconRect = new Rectangle(startX, (Height - _iconSize.Height) / 2, _iconSize.Width, _iconSize.Height);
-                            textRect = new Rectangle(startX + _iconSize.Width + _iconSpacing, contentRect.Y, (int)textSize.Width, contentRect.Height);
+                            iconRect = new RectangleF(startX, (Height - _iconSize.Height) / 2, _iconSize.Width, _iconSize.Height);
+                            textRect = new RectangleF(startX + _iconSize.Width + _iconSpacing, contentRect.Y, (int)textSize.Width, contentRect.Height);
                         }
                         else
                         {
-                            textRect = new Rectangle(startX, contentRect.Y, (int)textSize.Width, contentRect.Height);
-                            iconRect = new Rectangle(startX + (int)textSize.Width + _iconSpacing, (Height - _iconSize.Height) / 2, _iconSize.Width, _iconSize.Height);
+                            textRect = new RectangleF(startX, contentRect.Y, (int)textSize.Width, contentRect.Height);
+                            iconRect = new RectangleF(startX + (int)textSize.Width + _iconSpacing, (Height - _iconSize.Height) / 2, _iconSize.Width, _iconSize.Height);
                         }
                     }
                     else // Vertical layout
@@ -777,13 +738,13 @@ namespace CustomControlsLibrary
 
                         if (_iconTextAlignment == IconTextAlignment.IconBeforeText)
                         {
-                            iconRect = new Rectangle((Width - _iconSize.Width) / 2, startY, _iconSize.Width, _iconSize.Height);
-                            textRect = new Rectangle(contentRect.X, startY + _iconSize.Height + _iconSpacing, contentRect.Width, (int)textSize.Height);
+                            iconRect = new RectangleF((Width - _iconSize.Width) / 2, startY, _iconSize.Width, _iconSize.Height);
+                            textRect = new RectangleF(contentRect.X, startY + _iconSize.Height + _iconSpacing, contentRect.Width, (int)textSize.Height);
                         }
                         else
                         {
-                            textRect = new Rectangle(contentRect.X, startY, contentRect.Width, (int)textSize.Height);
-                            iconRect = new Rectangle((Width - _iconSize.Width) / 2, startY + (int)textSize.Height + _iconSpacing, _iconSize.Width, _iconSize.Height);
+                            textRect = new RectangleF(contentRect.X, startY, contentRect.Width, (int)textSize.Height);
+                            iconRect = new RectangleF((Width - _iconSize.Width) / 2, startY + (int)textSize.Height + _iconSpacing, _iconSize.Width, _iconSize.Height);
                         }
                     }
 
@@ -816,7 +777,7 @@ namespace CustomControlsLibrary
         #endregion
 
         #region Helper Methods Graphics
-        private GraphicsPath GetFigurePath(Rectangle rect, int radiusTopLeft = 0, int radiusTopRight = 0, int radiusBottomLeft = 0, int radiusBottomRight = 0)
+        private GraphicsPath GetFigurePath(RectangleF rect, int radiusTopLeft = 0, int radiusTopRight = 0, int radiusBottomLeft = 0, int radiusBottomRight = 0)
         {
             GraphicsPath path = new GraphicsPath();
 
