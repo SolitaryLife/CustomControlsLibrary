@@ -129,8 +129,14 @@ namespace CustomControlsLibrary
                         Invalidate();
                         break;
                     case ButtonType.Radio:
-                        
+
+                        if (_isToggled == value)
+                        {
+                            return;
+                        }
+
                         _isToggled = value;
+
                         if (_isToggled)
                         {
                             Parent?.Controls?.OfType<CustomButton>()
