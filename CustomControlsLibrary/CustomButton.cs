@@ -22,7 +22,6 @@ namespace CustomControlsLibrary
         private Color _textColor = Color.White;
         private bool _isHovering = false;
         private bool _underline = false;
-        private Color _underlineColor = Color.Black;
         private int _underlineThickness = 2;
 
         private ButtonType _buttonType = ButtonType.Normal;
@@ -134,7 +133,7 @@ namespace CustomControlsLibrary
                     case ButtonType.Radio:
 
                         if (_isToggled == value) return;
-                       
+
                         _isToggled = value;
 
                         if (_isToggled)
@@ -419,7 +418,7 @@ namespace CustomControlsLibrary
         /// Indicates whether the control is enabled.
         /// </summary>
         [Description("Indicates whether the control is enabled in the designer.")]
-        public new bool Enabled 
+        public new bool Enabled
         {
             get => base.Enabled;
             set
@@ -484,7 +483,6 @@ namespace CustomControlsLibrary
             _iconTextLayout = IconTextLayout.Horizontal;
 
             _underline = false;
-            _underlineColor = Color.Black;
             _underlineThickness = 2;
 
             Clicked = CustomClicked;
@@ -513,9 +511,9 @@ namespace CustomControlsLibrary
                     if (!Checked)
                     {
                         Checked = true;
-                        
+
                         Parent?.Controls?.OfType<CustomButton>()
-                            ?.Where(w => w != this  && w.ButtonTypes == ButtonType.Radio && w.Checked == true)
+                            ?.Where(w => w != this && w.ButtonTypes == ButtonType.Radio && w.Checked == true)
                             .ToList()
                             .ForEach(c => c.Checked = false);
                     }
@@ -602,13 +600,13 @@ namespace CustomControlsLibrary
                                 else
                                 {
                                     currentBackColor = _isHovering ? _buttonHoverColor : _buttonColor;
-                                    currentBorderColor = _isHovering? _borderHover : _borderColor;
+                                    currentBorderColor = _isHovering ? _borderHover : _borderColor;
                                     currentTextColor = _isHovering ? _textHoverColor : _textColor;
                                 }
                                 break;
                         }
                     }
-                    
+
 
                     using (Pen penSurface = new Pen(Parent.BackColor, smoothSize))
                     using (Pen penBorder = new Pen(!_underline ? currentBorderColor : Color.Transparent, _borderSize))
@@ -633,10 +631,10 @@ namespace CustomControlsLibrary
                         var startArea = _underline ? _textPadding : 5;
                         RectangleF contentRect = new RectangleF
                         (
-                            startArea,
-                            Height / 16,
-                            Width - (startArea * 2),
-                            Height - (startArea * 2)
+                            _underline ? 0 : _borderSize,
+                            _underline ? 0 : _borderSize,
+                            Width - (_underline ? _textPadding * 2 : _borderSize * 2),
+                            Height - (_underline ? _textPadding * 2 : _borderSize * 2)
                         );
 
                         // Draw content (text and icon)
@@ -658,19 +656,17 @@ namespace CustomControlsLibrary
                                 underlineY = contentRect.Bottom - _underlineThickness / 2;
                             }
 
-                            // var underlineColor = _underlineColor;
                             var underlineColor = currentBorderColor;
 
                             using (Pen underlinePen = new Pen(underlineColor, _underlineThickness))
                             {
-                                float underlinePadding = _borderSize;
-                                float underlineX = underlinePadding;
-                                float underlineWidth = Width - (underlinePadding * 2);
+                                float underlineX = 0;
+                                float underlineWidth = Width;
 
                                 g.DrawLine(underlinePen,
                                     underlineX,
                                     underlineY,
-                                    underlineX + underlineWidth,
+                                    underlineWidth,
                                     underlineY);
                             }
                         }
