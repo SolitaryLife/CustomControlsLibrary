@@ -628,28 +628,60 @@ namespace CustomControlsLibrary
 
         #region Events
         // Events
+        [Category("Custom TextBox")]
+        [Description("Describes that the event occurs when the text in the TextBox changes.")]
         public new event EventHandler TextChanged
         {
             add { textBox.TextChanged += value; }
             remove { textBox.TextChanged -= value; }
         }
 
+        [Category("Custom TextBox")]
+        [Description("Describes that the event occurs when a key is pressed down.")]
         public new event KeyEventHandler KeyDown
         {
             add { textBox.KeyDown += value; }
             remove { textBox.KeyDown -= value; }
         }
 
+        [Category("Custom TextBox")]
+        [Description("Describes that the event occurs when a key is released.")]
         public new event KeyEventHandler KeyUp
         {
             add { textBox.KeyUp += value; }
             remove { textBox.KeyUp -= value; }
         }
 
+        [Category("Custom TextBox")]
+        [Description("Describes that the event occurs when a key is pressed.")]
         public new event KeyPressEventHandler KeyPress
         {
             add { textBox.KeyPress += value; }
             remove { textBox.KeyPress -= value; }
+        }
+
+        [Category("Custom TextBox")]
+        [Description("Describes that the event occurs when the mouse button is pressed.")]
+        public new event MouseEventHandler MouseDown
+        {
+            add { textBox.MouseDown += value; }
+            remove { textBox.MouseDown -= value; }
+        }
+
+        [Category("Custom TextBox")]
+        [Description("Describes that the event occurs when the mouse button is released.")]
+        public new event MouseEventHandler MouseUp
+        {
+            add { textBox.MouseUp += value; }
+            remove { textBox.MouseUp -= value; }
+        }
+
+        [Category("Custom TextBox")]
+        [Description("Occurs when the mouse pointer moves over the TextBox.")]
+        public new event MouseEventHandler MouseMove
+        {
+            add { textBox.MouseMove += value; }
+            remove { textBox.MouseMove -= value; }
         }
         #endregion
 
