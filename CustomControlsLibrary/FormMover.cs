@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace CustomControlsLibrary
@@ -12,25 +10,22 @@ namespace CustomControlsLibrary
     public class CustomFormMover : Component
     {
         private Form _targetForm = null;
-        private const int WM_NCLBUTTONDOWN = 0xA1;
-        private const int HT_CAPTION = 0x2;
         private Control _propertieControl = null;
-        private MouseEventHandler _mouseEventArgs;
+        private MouseEventHandler _mouseDownEventArgs;
+        private MouseEventHandler _mouseUpEventArgs;
+        private MouseEventHandler _mouseMoveEventArgs;
+        private Point _mouseDownLocation;
+        private bool _isMoving = false;
 
         private List<Control> _controls = new List<Control>();
 
         private CustomControlBox _customControl = null;
 
-
-        [DllImport("user32.dll")]
-        private static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-
-        [DllImport("user32.dll")]
-        private static extern bool ReleaseCapture();
-
         public CustomFormMover()
         {
-            _mouseEventArgs = Control_MouseDown;
+            _mouseDownEventArgs = Control_MouseDown;
+            _mouseUpEventArgs = Control_MouseUp;
+            _mouseMoveEventArgs = Control_MouseMove;
         }
 
         [Category("Custom FormMover")]
@@ -49,21 +44,26 @@ namespace CustomControlsLibrary
                 {
                     if (_controls.Contains(_propertieControl))
                     {
-                        _propertieControl.MouseDown -= _mouseEventArgs;
+                        _propertieControl.MouseDown -= _mouseDownEventArgs;
+                        _propertieControl.MouseMove -= _mouseMoveEventArgs;
+                        _propertieControl.MouseUp -= _mouseUpEventArgs;
                         _controls.Remove(_propertieControl);
                     }
 
                     if (!_controls.Contains(_propertieControl))
                     {
-                        _propertieControl.MouseDown += _mouseEventArgs;
+                        _propertieControl.MouseDown += _mouseDownEventArgs;
+                        _propertieControl.MouseMove += _mouseMoveEventArgs;
+                        _propertieControl.MouseUp += _mouseUpEventArgs;
                         _controls.Add(_propertieControl);
                     }
                 }
 
                 if (value != null && !_controls.Contains(value))
                 {
-
-                    value.MouseDown += _mouseEventArgs;
+                    value.MouseDown += _mouseDownEventArgs;
+                    value.MouseMove += _mouseMoveEventArgs;
+                    value.MouseUp += _mouseUpEventArgs;
                     _propertieControl = value;
                     _controls.Add(value);
                 }
@@ -74,10 +74,13 @@ namespace CustomControlsLibrary
         {
             if (!_controls.Contains(control))
             {
-                control.MouseDown += _mouseEventArgs;
+                control.MouseDown += _mouseDownEventArgs;
+                control.MouseMove += _mouseMoveEventArgs;
+                control.MouseUp += _mouseUpEventArgs;
                 _controls.Add(control);
             }
         }
+
         private void Control_MouseDown(object sender, MouseEventArgs e)
         {
             if (sender is Control control && e.Button == MouseButtons.Left)
@@ -86,9 +89,9 @@ namespace CustomControlsLibrary
                 {
                     _targetForm = control.FindForm();
                 }
+
                 if (_targetForm != null)
                 {
-
                     if (_customControl == null || _customControl.IsDisposed)
                     {
                         #region Queue
@@ -142,22 +145,47 @@ namespace CustomControlsLibrary
 
                         #endregion
                     }
-
-                    if (_customControl != null && !_customControl.IsDisposed)
-                    {
-                        var valueSize = _customControl.OriginalBounds?.Size;
-                        if (valueSize != null)
-                        {
-                            _targetForm.Size = (Size)valueSize;
-                        }
-                    }
-
-                    ReleaseCapture();
-                    SendMessage(_targetForm.Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
                 }
+
+                _mouseDownLocation = e.Location;
+                _isMoving = true;
             }
         }
 
+        private void Control_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!_isMoving) return;
+            if (_mouseDownLocation == new Point(e.X, e.Y)) return;
+
+            // Check the original size from CustomControlBox
+            if (_targetForm != null)
+            {
+                if (_customControl != null && !_customControl.IsDisposed)
+                {
+                    var originalSize = _customControl.OriginalBounds?.Size;
+                    if (originalSize != null && originalSize != _targetForm.Size)
+                    {
+                        _targetForm.Size = (Size)originalSize;
+                    }
+                }
+
+                // Calculate the new position of the form
+                Point newLocation = new Point(
+                    _targetForm.Left + e.X - _mouseDownLocation.X,
+                    _targetForm.Top + e.Y - _mouseDownLocation.Y
+                );
+
+                _targetForm.Location = newLocation;
+            }
+        }
+
+        private void Control_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                _isMoving = false;
+            }
+        }
 
         #region Dispose
         private bool _isDispose = false;
@@ -169,7 +197,9 @@ namespace CustomControlsLibrary
                 {
                     foreach (var control in _controls)
                     {
-                        control.MouseDown -= _mouseEventArgs;
+                        control.MouseDown -= _mouseDownEventArgs;
+                        control.MouseUp -= _mouseUpEventArgs;
+                        control.MouseMove -= _mouseMoveEventArgs;
                     }
                     _controls.Clear();
                     _propertieControl = null;
