@@ -144,7 +144,10 @@ namespace CustomControlsLibrary
                             .ForEach(c => c.Checked = false);
                         }
 
-                        CheckedValueChanged?.Invoke(this, _isToggled);
+                        if (_isToggled)
+                        {
+                            CheckedValueChanged?.Invoke(this, _isToggled);
+                        }
                         Invalidate();
                         break;
                 }
