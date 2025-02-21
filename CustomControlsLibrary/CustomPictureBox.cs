@@ -67,9 +67,14 @@ namespace CustomControlsLibrary
 
                 if (value != null)
                 {
-                    _image = (Image)value.Clone();
-                    Invalidate();
+                    _image = value.Clone() as Image;
                 }
+                else
+                {
+                    _image = null;
+                }
+
+                Invalidate();
             }
         }
 

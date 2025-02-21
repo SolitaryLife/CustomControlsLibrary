@@ -250,9 +250,14 @@ namespace CustomControlsLibrary
 
                 if (value != null)
                 {
-                    _icon = (Image)value.Clone();
-                    Invalidate();
+                    _icon = value.Clone() as Image;
                 }
+                else
+                {
+                    _icon = null;
+                }
+
+                Invalidate();
             }
         }
 
