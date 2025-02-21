@@ -246,8 +246,13 @@ namespace CustomControlsLibrary
             get => _icon;
             set
             {
-                _icon = value;
-                Invalidate();
+                _icon?.Dispose();
+
+                if (value != null)
+                {
+                    _icon = (Image)value.Clone();
+                    Invalidate();
+                }
             }
         }
 

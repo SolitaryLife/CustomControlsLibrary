@@ -64,8 +64,12 @@ namespace CustomControlsLibrary
             set
             {
                 _image?.Dispose();
-                _image = value;
-                Invalidate();
+
+                if (value != null)
+                {
+                    _image = (Image)value.Clone();
+                    Invalidate();
+                }
             }
         }
 
