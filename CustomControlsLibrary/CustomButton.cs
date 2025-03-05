@@ -43,6 +43,8 @@ namespace CustomControlsLibrary
         private Font _buttonFont = new Font("Segoe UI", 12F);
         private int _textPadding = 5;
 
+        private float _textYoffset = 0;
+
         #region Enums
         public enum IconTextAlignment
         {
@@ -94,6 +96,18 @@ namespace CustomControlsLibrary
         {
             get => DoubleBuffered;
             set => DoubleBuffered = value;
+        }
+
+        [Category("Custom Button")]
+        [Description("Sets the vertical offset of the text from its default position")]
+        public float TextYoffset
+        {
+            get => _textYoffset;
+            set
+            {
+                _textYoffset = value;
+                Invalidate();
+            }
         }
 
         [Category("Custom Button")]
@@ -488,6 +502,7 @@ namespace CustomControlsLibrary
             BackColor = Color.Transparent;
             ForeColor = Color.White;
             Font = new Font("Segoe UI", 12F);
+            _textYoffset = 0;
 
             _autoEllipsis = false;
             _multiline = false;
@@ -727,32 +742,32 @@ namespace CustomControlsLibrary
                     if (_iconTextLayout == IconTextLayout.Horizontal)
                     {
                         int totalWidth = (int)textSize.Width + _iconSpacing + _iconSize.Width;
-                        int startX = (Width - totalWidth) / 2;
+                        float startX = (Width - totalWidth) / 2;
 
                         if (_iconTextAlignment == IconTextAlignment.IconBeforeText)
                         {
                             iconRect = new RectangleF(startX, (Height - _iconSize.Height) / 2, _iconSize.Width, _iconSize.Height);
-                            textRect = new RectangleF(startX + _iconSize.Width + _iconSpacing, contentRect.Y, (int)textSize.Width, contentRect.Height);
+                            textRect = new RectangleF(startX + _iconSize.Width + _iconSpacing, contentRect.Y + _textYoffset, (int)textSize.Width, contentRect.Height);
                         }
                         else
                         {
-                            textRect = new RectangleF(startX, contentRect.Y, (int)textSize.Width, contentRect.Height);
+                            textRect = new RectangleF(startX, contentRect.Y + _textYoffset, (int)textSize.Width, contentRect.Height);
                             iconRect = new RectangleF(startX + (int)textSize.Width + _iconSpacing, (Height - _iconSize.Height) / 2, _iconSize.Width, _iconSize.Height);
                         }
                     }
                     else // Vertical layout
                     {
                         int totalHeight = (int)textSize.Height + _iconSpacing + _iconSize.Height;
-                        int startY = (Height - totalHeight) / 2;
+                        float startY = (Height - totalHeight) / 2;
 
                         if (_iconTextAlignment == IconTextAlignment.IconBeforeText)
                         {
                             iconRect = new RectangleF((Width - _iconSize.Width) / 2, startY, _iconSize.Width, _iconSize.Height);
-                            textRect = new RectangleF(contentRect.X, startY + _iconSize.Height + _iconSpacing, contentRect.Width, (int)textSize.Height);
+                            textRect = new RectangleF(contentRect.X, startY + _iconSize.Height + _iconSpacing + _textYoffset, contentRect.Width, (int)textSize.Height);
                         }
                         else
                         {
-                            textRect = new RectangleF(contentRect.X, startY, contentRect.Width, (int)textSize.Height);
+                            textRect = new RectangleF(contentRect.X, startY + _textYoffset, contentRect.Width, (int)textSize.Height);
                             iconRect = new RectangleF((Width - _iconSize.Width) / 2, startY + (int)textSize.Height + _iconSpacing, _iconSize.Width, _iconSize.Height);
                         }
                     }
@@ -762,6 +777,15 @@ namespace CustomControlsLibrary
                     {
                         g.DrawImage(_icon, iconRect);
                     }
+                }
+                else
+                {
+                    // ปรับตำแหน่งข้อความเมื่อไม่มีไอคอน
+                    textRect = new RectangleF(
+                        contentRect.X,
+                        contentRect.Y + _textYoffset,
+                        contentRect.Width,
+                        contentRect.Height);
                 }
 
                 // Draw text
